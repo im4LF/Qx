@@ -1,6 +1,9 @@
 <?php 
 define('Q_PATH', realpath(dirname(__FILE__)));
 
+spl_autoload_register(array('import', 'from'));
+
+import::from('q:utils/array');
 import::from('q:utils/*');
 
 class import
@@ -8,6 +11,7 @@ class import
 	protected static $_instance;
 	protected $_config;
 	protected $_data;
+	protected $_stats;
 	
 	static function s()
 	{
@@ -21,6 +25,16 @@ class import
 	{
 		$this->configure(import::config('q:import.php'))->scan();
 	}
+	
+	protected function _timer($key, $mode = 'start')
+	{
+		if ('stop' == $mode)
+		{
+			$this->_stats->timers[$key][] = microtime(true) - $this->_stats->timers[$key][-1];
+			return;
+		}
+		$this->_stats->timers[$key][-1] = microtime(true);
+	}
 
 	function configure($config = null)
 	{
@@ -33,9 +47,16 @@ class import
 	
 	function scan()
 	{
-		if (($this->_data = $this->_cache())) return;
+		$this->_timer(__METHOD__);
+		if (($cache = $this->_cache()))
+		{
+			$this->_data = $cache;
+			$this->_timer(__METHOD__, 'stop');
+			return;
+		}
 		
-		for ($i = 0; $i < count($this->_config['scanner']['directories']); $i++)
+		$size = count($this->_config['scanner']['directories']);
+		for ($i = 0; $i < $size; $i++)
 		{
 			list($type, $directory) = explode(':', $this->_config['scanner']['directories'][$i]);
 			$type_const = strtoupper($type).'_PATH';
@@ -46,11 +67,15 @@ class import
 		}
 		
 		$this->_cache($this->_data);
+		$this->_timer(__METHOD__, 'stop');
 	}
 	
 	protected function _cache($value = null)
 	{
-		$cache_file = $this->_config['cache-file'];
+		if (!$this->_config['cache']['enabled'])
+			return false;
+			
+		$cache_file = $this->_config['cache']['file'];
 		
 		list($type, $cache_file) = explode(':', $cache_file);
 		$type_const = strtoupper($type).'_PATH';
@@ -88,11 +113,6 @@ class import
 			    
             foreach ($matches as $match)
             {
-                /*$this->_data->classes[$type.':'.$match[1]] = (object) array(
-					'name' => $match[1],
-					'path' => $filename,
-					'loaded' =>& $this->_data->files[$filename],
-				);*/
 				$this->_data->classes[$match[1]] = (object) array(
 					'name' => $match[1],
 					'path' => $filename,
@@ -133,6 +153,8 @@ class import
 		if (!array_key_exists($class_name, $this->_data->classes))	// class not found
 			throw new Exception("class [$class_name] not found");
 
+		//$this->_stats->requests[$this->_data->classes[$class_name]->path]++;
+
 		if ($this->_data->classes[$class_name]->loaded) return;		// class already loaded 
  
 		require($this->_data->classes[$class_name]->path);			// load file
@@ -172,12 +194,12 @@ class import
 	
     protected function _importFile($path)
     {
+    	//$this->_stats->requests[$path]++;
+		
     	if (!preg_match('/\.php$/', $path) || isset($this->_data->files[$path])) return;
 
 		require($path);		
 		$this->_data->files[$path] = true;
     }
 }
-
-spl_autoload_register(array('import', 'from'));
 ?>

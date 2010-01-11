@@ -19,7 +19,7 @@ class Runner
 		import::from($this->_controller);
 		
 		// load controller and find method for action
-		$this->_parser = QF::n(QF::s('Configs')->impls->parser);
+		$this->_parser = QF::n(QF::s('Configs')->impls['parser']);
 		$this->_loadController($this->_controller);
 		$this->_parser = null;
 		

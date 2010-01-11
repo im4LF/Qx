@@ -3,9 +3,9 @@ class App
 {
 	public function run() 
 	{
-		$config = array_to_object(import::config('app:app.php'));	// import application configuration
-		QF::s('Configs')->impls	= $config->impls;					// save implementations
-		QF::s('Configs')->scenarios	= $config->scenarios;			// save scenarios
+		$config = import::config('app:app.php');			// import application configuration
+		QF::s('Configs')->impls	= $config['impls'];			// save implementations
+		QF::s('Configs')->scenarios	= $config['scenarios'];	// save scenarios
 		
 		// create new external request
 		QF::n('Request', 
@@ -18,8 +18,8 @@ class App
 					'files'		=>& $_FILES
 		))->dispatch();							// run request dispatching
 				
-		QF::n('Request', '/user.html')->dispatch();
-		QF::n('Request', '/user/.login.html', array('method'=>'POST'))->dispatch();
+		//QF::n('Request', '/user.html')->dispatch();
+		//QF::n('Request', '/user/.login.html', array('method'=>'POST'))->dispatch();
 		
 		/*$reg_data = array(
 			'email' => 'tester@tester.tester',

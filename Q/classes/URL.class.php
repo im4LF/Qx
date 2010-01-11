@@ -16,7 +16,7 @@ class URL
 	
 	function parse() 
 	{
-		$impl = QF::s('Configs')->impls->url; 
+		$impl = QF::s('Configs')->impls['url']; 
 		$this->_properties = QF::n($impl, $this->_raw_url)->parse();
 		return $this;
 	}

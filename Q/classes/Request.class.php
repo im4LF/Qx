@@ -43,7 +43,7 @@ class Request
 		$manager->pushRequest($this);		// push current request to RequestManager stack
 		
 		// get scenario and run it
-		$scenario = QF::s('Configs')->scenarios->{$this->_scenario};
+		$scenario = QF::s('Configs')->scenarios[$this->_scenario];
 		QF::n($scenario, $this)->run();
 		
 		$manager->popRequest();				// pop current request from stack
