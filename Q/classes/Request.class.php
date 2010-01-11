@@ -24,12 +24,8 @@ class Request
 	{
 		if ('args' == $from)
 			return $this->url->args[$name];
-		if ('get' == $from)
-			return $this->_get[$name];
-		if ('post' == $from)
-			return $this->_post[$name];
-		if ('files' == $from)
-			return $this->_files[$name];
+		
+		return $this->{'_'.$from}[$name];
 	}
 	
 	function __get($name) 
@@ -43,7 +39,7 @@ class Request
 		$manager->pushRequest($this);		// push current request to RequestManager stack
 		
 		// get scenario and run it
-		$scenario = QF::s('Configs')->scenarios->{$this->_scenario};
+		$scenario = QF::s('Configs')->scenarios[$this->_scenario];
 		QF::n($scenario, $this)->run();
 		
 		$manager->popRequest();				// pop current request from stack

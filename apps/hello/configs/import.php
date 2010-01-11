@@ -1,6 +1,9 @@
 <?php
 return array(
-	'cache-file' => 'app:cache/import.txt',
+	'cache' => array(
+		'file' => 'app:cache/import.txt',
+		'enabled' => false
+	),
 	'scanner' => array(
 		'directories' => array(
 			'shared:types', 

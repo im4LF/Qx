@@ -16,7 +16,7 @@ class Router
 	
 	function route()
 	{
-		$impl = QF::s('Configs')->impls->router;
+		$impl = QF::s('Configs')->impls['router'];
 		$this->_properties = QF::n($impl, $this->_request)->route();
 		return $this;
 	}

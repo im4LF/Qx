@@ -1,13 +1,14 @@
 <?php 
 define('Q_PATH', realpath(dirname(__FILE__)));
 
-import::from('q:utils/*');
+spl_autoload_register(array('import', 'from'));
 
 class import
 {
 	protected static $_instance;
 	protected $_config;
 	protected $_data;
+	protected $_stats;
 	
 	static function s()
 	{
@@ -21,6 +22,23 @@ class import
 	{
 		$this->configure(import::config('q:import.php'))->scan();
 	}
+	
+	protected function _timer($key, $mode = 'start')
+	{
+		if ('stop' == $mode)
+		{
+			$this->_stats['timers'][$key][] = microtime(true) - $this->_stats['timers'][$key][-1];
+			unset($this->_stats['timers'][$key][-1]);
+			return;
+		}
+		
+		$this->_stats['timers'][$key][-1] = microtime(true);
+	}
+	
+	function stats()
+	{
+		return $this->_stats;
+	}
 
 	function configure($config = null)
 	{
@@ -33,7 +51,13 @@ class import
 	
 	function scan()
 	{
-		if (($this->_data = $this->_cache())) return;
+		$this->_timer('scan');
+		if (($cache = $this->_cache())) 
+		{
+			$this->_data = $cache;
+			$this->_timer('scan', 'stop');
+			return;
+		}
 		
 		for ($i = 0; $i < count($this->_config['scanner']['directories']); $i++)
 		{
@@ -46,15 +70,20 @@ class import
 		}
 		
 		$this->_cache($this->_data);
+		$this->_timer('scan', 'stop');
 	}
 	
 	protected function _cache($value = null)
 	{
-		$cache_file = $this->_config['cache-file'];
+		if (!$this->_config['cache']['enabled'])
+			return false;
+		
+		$cache_file = $this->_config['cache']['file'];
 		
 		list($type, $cache_file) = explode(':', $cache_file);
 		$type_const = strtoupper($type).'_PATH';
-		if (!defined($type_const)) return false;
+		if (!defined($type_const)) 
+			return false;
 		
 		$cache_file = constant($type_const).DIRECTORY_SEPARATOR.$cache_file;
 		
@@ -88,15 +117,10 @@ class import
 			    
             foreach ($matches as $match)
             {
-                /*$this->_data->classes[$type.':'.$match[1]] = (object) array(
+				$this->_data->classes[$match[1]] = array(
 					'name' => $match[1],
 					'path' => $filename,
-					'loaded' =>& $this->_data->files[$filename],
-				);*/
-				$this->_data->classes[$match[1]] = (object) array(
-					'name' => $match[1],
-					'path' => $filename,
-					'loaded' =>& $this->_data->files[$filename],
+					'loaded' =>& $this->_data->files[$filename]
 				);
             }
 		}			
@@ -133,10 +157,10 @@ class import
 		if (!array_key_exists($class_name, $this->_data->classes))	// class not found
 			throw new Exception("class [$class_name] not found");
 
-		if ($this->_data->classes[$class_name]->loaded) return;		// class already loaded 
+		if ($this->_data->classes[$class_name]['loaded']) return;	// class already loaded 
  
-		require($this->_data->classes[$class_name]->path);			// load file
-		$this->_data->classes[$class_name]->loaded = true;
+		require($this->_data->classes[$class_name]['path']);		// load file
+		$this->_data->classes[$class_name]['loaded'] = true;
 	}
 	
 	function importFiles($path)
@@ -178,6 +202,4 @@ class import
 		$this->_data->files[$path] = true;
     }
 }
-
-spl_autoload_register(array('import', 'from'));
 ?>
