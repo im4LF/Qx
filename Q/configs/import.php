@@ -2,8 +2,8 @@
 // import configuration
 return array(
 	'cache' => array(
-		'enabled' => true,
 		'file' => 'q:cache/import.txt',
+		'enabled' => false
 	),
 	'scanner' => array(
 		// directories where classes will be searched

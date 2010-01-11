@@ -24,12 +24,8 @@ class Request
 	{
 		if ('args' == $from)
 			return $this->url->args[$name];
-		if ('get' == $from)
-			return $this->_get[$name];
-		if ('post' == $from)
-			return $this->_post[$name];
-		if ('files' == $from)
-			return $this->_files[$name];
+		
+		return $this->{'_'.$from}[$name];
 	}
 	
 	function __get($name) 

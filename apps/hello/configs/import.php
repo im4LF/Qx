@@ -1,8 +1,8 @@
 <?php
 return array(
 	'cache' => array(
-		'enabled' => true,
 		'file' => 'app:cache/import.txt',
+		'enabled' => false
 	),
 	'scanner' => array(
 		'directories' => array(
