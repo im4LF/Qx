@@ -3,17 +3,17 @@ class App
 {
 	public function run() 
 	{
-		QF::s('Benchmark')->start('app');
+		QF::s('Benchmark')->start('app run');
 		
 		$config = import::config('app:app.php');	// import application configuration
-		QF::s('Configs')->impls	= $config['impls'];					// save implementations
-		QF::s('Configs')->scenarios	= $config['scenarios'];			// save scenarios
-		
-		QF::s('Benchmark')->start('request: /');
+		foreach ($config as $key => $value)			// save all configuration sections in configs		
+		{
+			QF::s('Configs')->$key = $value;
+		}
 		
 		// create new external request
 		QF::n('Request', 
-				'/',							// raw url of request 
+				'/',							// raw url for request - $_SERVER['REQUEST_URI']
 				array(
 					'method'	=> 'GET', 		// request method 
 					'scenario'	=> 'external',	// scenario name
@@ -21,9 +21,8 @@ class App
 					'post'		=>& $_POST,
 					'files'		=>& $_FILES
 		))->dispatch();							// run request dispatching
-				
-		echo 'request /: '.QF::s('Benchmark')->stop('app')."\n";
-				
+		
+		// some test requests
 		QF::n('Request', '/user.html')->dispatch();
 		QF::n('Request', '/user/.login.html', array('method'=>'POST'))->dispatch();
 		
@@ -37,12 +36,13 @@ class App
 			'post'	 =>& $reg_data
 		))->dispatch();
 		
-		echo 'dt app: '.QF::s('Benchmark')->stop('app')."\n";
+		echo 'dt app run: '.QF::s('Benchmark')->stop('app run')."\n";
 		
 		$memory = function_exists('memory_get_usage') ? (memory_get_usage() / 1024 / 1024) : 0;
 
-		echo 'memory:'. number_format($memory, 2)."MB\n";
-		echo 'included_files:'.count(get_included_files());
+		echo 'memory: '. number_format($memory, 2)."MB\n";
+		echo 'included_files: '.count(get_included_files());
+		
 		//echo print_r(import::s(), 1);
 		//echo print_r(QF::s('Configs'), 1);
 		//echo print_r(QF::s('RequestManager'), 1);

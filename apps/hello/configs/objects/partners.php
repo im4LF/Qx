@@ -3,25 +3,25 @@ return array(
 	// object fields
 	'fields' => array(
 		'name' => array(
-			'title'	=> 'Íàçâàíèå ïàðòíåðà',	// title of field
+			'title'	=> 'ÐÐ°Ð·Ð²Ð°Ð½Ð¸Ðµ Ð¿Ð°Ñ€Ñ‚Ð½ÐµÑ€Ð°',	// title of field
 			'type'	=> 'String',			// type
 			'rules'	=> array('required'),	// rules
 			'from'	=> 'post'				// get value from $_POST
 		),
 		'description' => array(
-			'title'	=> 'Îïèñàíèå',
+			'title'	=> 'ÐžÐ¿Ð¸ÑÐ°Ð½Ð¸Ðµ',
 			'type'	=> 'Text',
 			'rules'	=> array('xss_filter'),
 			'from'	=> 'post'
 		),
 		'icon' => array(
-			'title'	=> 'Ëîãîòèï',
+			'title'	=> 'Ð›Ð¾Ð³Ð¾Ñ‚Ð¸Ð¿',
 			'type'	=> 'Image',
 			'rules'	=> array('required', 'jpeg_gif'),
 			'from'	=> 'files'
 		),
 		'www' => array(
-			'title'	=> 'Àäðåñ ñàéòà',
+			'title'	=> 'ÐÐ´Ñ€ÐµÑ ÑÐ°Ð¹Ñ‚Ð°',
 			'type'	=> 'Link',
 			'rules'	=> array('valid_http'),
 			'from'	=> 'post'
@@ -29,8 +29,8 @@ return array(
 	),
 	
 	'groups' => array(
-		'Îáÿçàòåëüíûå ïîëÿ' => array('name', 'icon'),
-		'Äîïîëíèòåëüíî' => array('description', 'www')
+		'ÐžÐ±ÑÐ·Ð°Ñ‚ÐµÐ»ÑŒÐ½Ñ‹Ðµ Ð¿Ð¾Ð»Ñ' => array('name', 'icon'),
+		'Ð”Ð¾Ð¿Ð¾Ð»Ð½Ð¸Ñ‚ÐµÐ»ÑŒÐ½Ð¾' => array('description', 'www')
 	)
 );
 ?>

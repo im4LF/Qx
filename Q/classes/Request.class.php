@@ -35,14 +35,17 @@ class Request
 	
 	function dispatch() 
 	{
+		QF::s('Benchmark')->start('request ['.$this->_raw_url.']');
+		
 		$manager = QF::s('RequestManager');	// get RequestManager
 		$manager->pushRequest($this);		// push current request to RequestManager stack
 		
-		// get scenario and run it
-		$scenario = QF::s('Configs')->scenarios[$this->_scenario];
-		QF::n($scenario, $this)->run();
+		$scenario = QF::s('Configs')->scenarios[$this->_scenario];	// get scenario name
+		QF::n($scenario, $this)->run();								// run scenario
 		
 		$manager->popRequest();				// pop current request from stack
+		
+		echo 'dt request ['.$this->_raw_url.']: '.QF::s('Benchmark')->stop('request ['.$this->_raw_url.']')."\n";
 	}
 }
 ?>

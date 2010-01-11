@@ -3,7 +3,6 @@ define('Q_PATH', realpath(dirname(__FILE__)));
 
 spl_autoload_register(array('import', 'from'));
 
-import::from('q:utils/array');
 import::from('q:utils/*');
 
 class import
@@ -67,7 +66,8 @@ class import
 		{
 			list($type, $directory) = explode(':', $this->_config['scanner']['directories'][$i]);
 			$type_const = strtoupper($type).'_PATH';
-			if (!defined($type_const)) continue;
+			if (!defined($type_const)) 
+				continue;
 			
 			$path = constant($type_const).DIRECTORY_SEPARATOR.$directory;
 			$this->_scanDirectory($path);
@@ -91,7 +91,7 @@ class import
 		
 		$cache_file = constant($type_const).DIRECTORY_SEPARATOR.$cache_file;
 		
-		if (!$value && !file_exists($cache_file))
+		if (!$value && !file_exists($cache_file))	// value not set - its mean load from cache 
 			return false;
 			
 		if ($value) // save to cache
@@ -105,17 +105,20 @@ class import
 	
 	protected function _scanDirectory($path)
 	{
-		if (!file_exists($path)) return;
+		if (!file_exists($path)) 
+			return;
 		
 		$di = new RecursiveDirectoryIterator($path);
 		foreach (new RecursiveIteratorIterator($di) as $fileinfo)
 		{
 			$filename = $fileinfo->getPathname();
 			
-			if (!preg_match($this->_config['scanner']['filenames'], $filename)) continue;
+			if (!preg_match($this->_config['scanner']['filenames'], $filename)) 
+				continue;
 				
 			$content = file_get_contents($filename);
-            if (!preg_match_all('/^\s*class\s+(\w+)/im', $content, $matches, PREG_SET_ORDER)) continue;
+            if (!preg_match_all('/^\s*class\s+(\w+)/im', $content, $matches, PREG_SET_ORDER)) 
+				continue;
                
 			$this->_data->files[$filename] = @$this->_data->files[$filename];
 			    
@@ -134,24 +137,22 @@ class import
 	{
 		$i = import::s();
 		if (false === strpos($mask, '/'))
-        {
             $i->importClass($mask);
-        }
         else
-        {
             $i->importFiles($mask);
-        }
 	}
 	
 	static function config($path)
 	{
 		list($type, $path) = explode(':', $path);
 		$type_const = strtoupper($type).'_PATH';
-		if (!defined($type_const)) return;
+		if (!defined($type_const)) 
+			return;
 			
 		$config_file = constant($type_const).DIRECTORY_SEPARATOR.'configs'.DIRECTORY_SEPARATOR.$path;  
 		
-		if (!file_exists($config_file)) return;
+		if (!file_exists($config_file)) 
+			return;
 		
 		return require($config_file);
 	}
@@ -161,9 +162,10 @@ class import
 		if (!array_key_exists($class_name, $this->_data->classes))	// class not found
 			throw new Exception("class [$class_name] not found");
 
-		if ($this->_data->classes[$class_name]['loaded']) return;	// class already loaded 
+		if ($this->_data->classes[$class_name]['loaded'])	// class already loaded 
+			return; 
  
-		require($this->_data->classes[$class_name]['path']);		// load file
+		require($this->_data->classes[$class_name]['path']);	// load file
 		$this->_data->classes[$class_name]['loaded'] = true;
 	}
 	
@@ -179,7 +181,7 @@ class import
         $path = str_replace('/', DIRECTORY_SEPARATOR, $path);
         $path = constant($type_const).DIRECTORY_SEPARATOR.$path;
 
-        if (strpos($path, '*'))				// import directory recursively
+        if (strpos($path, '*'))	// import directory recursively
         {
         	foreach (glob($path) as $item)
 			{
@@ -194,15 +196,14 @@ class import
 					$this->_importFile($fileinfo->getPathname());
 			}
         }
-        else								// import simple file
+        else	// import simple file
             $this->_importFile($path.'.php');
     }
 	
     protected function _importFile($path)
     {
-    	//$this->_stats->requests[$path]++;
-		
-    	if (!preg_match('/\.php$/', $path) || isset($this->_data->files[$path])) return;
+    	if (!preg_match('/\.php$/', $path) || isset($this->_data->files[$path])) 
+			return;
 
 		require($path);		
 		$this->_data->files[$path] = true;
