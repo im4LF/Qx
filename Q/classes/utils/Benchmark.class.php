@@ -1,31 +1,44 @@
 <?php
 class Benchmark
 {
-	protected $_keys;
+	protected static $_marks;
 	
-	function start($key)
+	static function start($key)
 	{
-		$this->_keys[$key]['t0'] = microtime(true);
+		self::$_marks[$key]->t0 = microtime(true);
+		self::$_marks[$key]->memory = self::_memory();
 		
 		return $this; 
 	}
 	
-	function stop($key)
+	static function stop($key)
 	{
-		$this->_keys[$key]['t1'] = microtime(true);
-		$this->_keys[$key]['dt'] = $this->_keys[$key]['t1'] - $this->_keys[$key]['t0'];
+		self::$_marks[$key]->t1 = microtime(true);
+		self::$_marks[$key]->time = self::$_marks[$key]->t1 - self::$_marks[$key]->t0;
 		
-		return $this->_keys[$key]['dt'];
+		return self::$_marks[$key];
 	}
 	
-	function dt($key = null)
+	static function get($key = null)
 	{
 		if (!$key)
 		{
-			return $this->_keys;
+			return self::$_marks;
 		}
 		
-		return $this->_keys[$key]['dt'];
+		return self::$_marks[$key];
+	}
+	
+	protected static function _memory()
+	{
+		static $func;
+
+		if (null === $func)
+		{
+			$func = function_exists('memory_get_usage');
+		}
+
+		return $func ? memory_get_usage() : 0;
 	}
 }
 ?>

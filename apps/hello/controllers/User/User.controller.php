@@ -1,5 +1,7 @@
 <?php
 /**
+ * @view user/default
+ * 
  * # @action "request method":"request action"."request view" "class method"
  * @action *:*.* index
  * 
@@ -16,6 +18,9 @@ class User_Controller extends Any_Controller
 {
 	function index() {}
 	
+	/**
+	 * @view user/login-form
+	 */
 	function loginForm() {}
 	
 	/**

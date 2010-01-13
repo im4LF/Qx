@@ -11,6 +11,16 @@ return array(
 	'scenarios' => array(
 		'external'	=> 'ExternalScenario',
 		'internal'	=> 'InternalScenario'
+	),
+	
+	// templaters
+	'templaters' => array(
+		'html' => array(
+			'templater' => 'SmartyTemplater'
+		),
+		'json' => array(
+			'templater' => 'JsonTemplater'
+		)
 	)
 );
 ?>

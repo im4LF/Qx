@@ -3,7 +3,7 @@
 return array(
 	'cache' => array(
 		'file' => 'q:cache/import.txt',
-		'enabled' => false
+		'enabled' => true
 	),
 	'scanner' => array(
 		// directories where classes will be searched

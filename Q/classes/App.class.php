@@ -3,7 +3,7 @@ class App
 {
 	public function run() 
 	{
-		QF::s('Benchmark')->start('app run');
+		Benchmark::start('app run');
 		
 		$config = import::config('app:app.php');	// import application configuration
 		foreach ($config as $key => $value)			// save all configuration sections in configs		
@@ -36,12 +36,12 @@ class App
 			'post'	 =>& $reg_data
 		))->dispatch();
 		
-		echo 'dt app run: '.QF::s('Benchmark')->stop('app run')."\n";
+		echo 'dt app run: '.Benchmark::stop('app run')->time."\n";
 		
-		$memory = function_exists('memory_get_usage') ? (memory_get_usage() / 1024 / 1024) : 0;
+		//$memory = function_exists('memory_get_usage') ? (memory_get_usage() / 1024 / 1024) : 0;
 
-		echo 'memory: '. number_format($memory, 2)."MB\n";
-		echo 'included_files: '.count(get_included_files());
+		//echo 'memory: '. number_format($memory, 2)."MB\n";
+		//echo 'included_files: '.count(get_included_files());
 		
 		//echo print_r(import::s(), 1);
 		//echo print_r(QF::s('Configs'), 1);
