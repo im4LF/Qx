@@ -19,7 +19,7 @@ class User_Controller extends Any_Controller
 	function index() {}
 	
 	/**
-	 * @view user/login
+	 * @view user/login-form
 	 */
 	function loginForm() {}
 	

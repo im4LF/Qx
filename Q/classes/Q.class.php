@@ -3,7 +3,7 @@ class Q
 {
     static function app($paths)
     {
-    	QF::s('Benchmark')->start('app init');
+    	Benchmark::start('app init');
 		
         foreach ($paths as $key=>$path)				// define path's constants for application, shared and others
         {
@@ -15,8 +15,8 @@ class Q
 
 		import::s()->configure($config)->scan('app:cache/import.txt'); 	// set configuration and scan new paths 
 		
-		echo 'dt imports:'.print_r(import::s()->stats(), 1);
-		echo 'dt app init: '.QF::s('Benchmark')->stop('app init')."\n";
+		//echo 'dt imports:'.print_r(import::s()->stats(), 1);
+		echo 'dt app init: '.Benchmark::stop('app init')->time."\n";
 		
         return QF::n('App');
     }
