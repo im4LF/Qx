@@ -55,6 +55,13 @@ class DocCommentParser
         }
 	}
 	
+	protected function _parseViews($doc_comment, $method_name = '')
+	{
+		if (!preg_match_all('/@view(\s+([\w]+))?(\s+([\w\.\/\-]+))/', $doc_comment))
+			return;
+		
+	}
+	
 	protected function _parseMethodConfigs($doc_comment, $method_name)
 	{
 		if (!preg_match_all('/@config\s+(\w+)\s+\[(.*?)\]/', $doc_comment, $matches, PREG_SET_ORDER)) return;

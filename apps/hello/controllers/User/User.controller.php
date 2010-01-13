@@ -1,6 +1,9 @@
 <?php
 /**
+ * # @view "contollerMethod" "template file", if controllerMethod not set - its default template
  * @view user/default
+ * @view ajaxLogin		user/login-form
+ * @view simpleLogin	user/simple-login
  * 
  * # @action "request method":"request action"."request view" "class method"
  * @action *:*.* index
@@ -13,12 +16,14 @@
  * # [before method1 method2, after method3] mean than "before" and "after" calling controller method 
  * # will be called defined methods - "method1 method2" and "method3"
  * @action post:login.json ajaxLogin [before ajaxLogin__before, after loginUser]
+ * 
  */
 class User_Controller extends Any_Controller
 {
 	function index() {}
 	
 	/**
+	 * # also you may redefine view
 	 * @view user/login-form
 	 */
 	function loginForm() {}
@@ -47,8 +52,6 @@ class User_Controller extends Any_Controller
 	function ajaxLogin__validation_error(&$email, &$password) {}
 	
 	/**
-	 * @template simple-login
-	 * 
 	 * @action post:login.* [after clearOldLogin loginUser]
 	 * 
 	 * @config validation [on, auto soft, user]
@@ -57,7 +60,6 @@ class User_Controller extends Any_Controller
 	 */
 	function simpleLogin($email, $password) 
 	{
-		//echo __METHOD__.': '.print_r(func_get_args(), 1);
 	}
 	
 	/**
@@ -73,7 +75,6 @@ class User_Controller extends Any_Controller
 	
 	function simpleLogin__validation_error($errors)
 	{
-		//echo __METHOD__.': '.print_r($errors, 1);
 	}
 	
 	function clearOldLogin() {}
