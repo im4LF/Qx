@@ -1,5 +1,5 @@
 <?php 
-class String extends Any
+class String extends Any_Type
 {
     function __construct($value)
     {

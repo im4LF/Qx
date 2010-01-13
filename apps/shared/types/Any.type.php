@@ -1,5 +1,5 @@
 <?php
-class Any
+class Any_Type
 {
 	protected $_value;
     
