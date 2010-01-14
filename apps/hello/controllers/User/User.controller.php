@@ -1,22 +1,25 @@
 <?php
 /**
  * # @view "contollerMethod" "template file", if controllerMethod not set - its default template
+ * 
  * @view user/default
  * @view ajaxLogin		user/login-form
  * @view simpleLogin	user/simple-login
  * 
  * # @action "request method":"request action"."request view" "class method"
+ * 
  * @action *:*.* index
  * 
  * # if "class method" starts with "@" -	its mean that controll will be passed to 
  * #										another controller called action 
+ * 
  * @action *:register.* @UserRegister_Action
  * @action get:login.* loginForm
  * 
  * # [before method1 method2, after method3] mean than "before" and "after" calling controller method 
  * # will be called defined methods - "method1 method2" and "method3"
- * @action post:login.json ajaxLogin [before ajaxLogin__before, after loginUser]
  * 
+ * @action post:login.json ajaxLogin [before ajaxLogin__before, after loginUser]
  */
 class User_Controller extends Any_Controller
 {

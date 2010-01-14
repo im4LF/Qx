@@ -1,16 +1,14 @@
-<?php 
-// import configuration
+<?php
 return array(
 	'cache' => array(
 		'file' => 'q:cache/import.txt',
-		'enabled' => true
+		'enabled' => false
 	),
 	'scanner' => array(
-		// directories where classes will be searched
-		'directories'	=> array('q:classes', 'q:impls'),
-		
-		// filenames where defined classes
-		'filenames'		=> '/\.(class|impl)\.php$/'
-	)	
+		'directories' => array(
+			'q:classes', 'q:impls'
+		),
+		'filenames'	=> '/\.(class|impl)\.php$/',
+	)
 );
 ?>

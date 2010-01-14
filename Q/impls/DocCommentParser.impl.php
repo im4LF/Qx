@@ -10,6 +10,7 @@ class DocCommentParser
 		$doc_comment = $this->_reflection->getDocComment();
 		
 		$this->_parseActions($doc_comment);
+		$this->_parseViews($doc_comment);
 		
 		$methods = $this->_reflection->getMethods(ReflectionMethod::IS_PUBLIC);
 		foreach ($methods as $method)
@@ -20,6 +21,7 @@ class DocCommentParser
 			
 			$this->_parseActions($doc_comment, $method_name);
 			$this->_parseMethodConfigs($doc_comment, $method_name);
+			$this->_parseViews($doc_comment, $method_name);
 			
 			if (!preg_match_all('/@param\s+(\w+)\s+\$([\w]+)\s+(\w+)(\s+\[(.*?)\])?/', $doc_comment, $matches, PREG_SET_ORDER)) continue;
 			
@@ -57,14 +59,22 @@ class DocCommentParser
 	
 	protected function _parseViews($doc_comment, $method_name = '')
 	{
-		if (!preg_match_all('/@view(\s+([\w]+))?(\s+([\w\.\/\-]+))/', $doc_comment))
+		if (!preg_match_all('/@view(\s+([\w]+))?(\s+([\w\.\/\-]+))/', $doc_comment, $matches, PREG_SET_ORDER))
 			return;
 		
+		foreach ($matches as $match)
+		{
+			if (empty($match[2]) && empty($method_name))
+				$this->_config['views']['*'] = $match[4];
+			else
+				$this->_config['views'][$method_name ? $method_name : $match[2]] = $match[4];
+		}
 	}
 	
 	protected function _parseMethodConfigs($doc_comment, $method_name)
 	{
-		if (!preg_match_all('/@config\s+(\w+)\s+\[(.*?)\]/', $doc_comment, $matches, PREG_SET_ORDER)) return;
+		if (!preg_match_all('/@config\s+(\w+)\s+\[(.*?)\]/', $doc_comment, $matches, PREG_SET_ORDER)) 
+			return;
 		
 		foreach ($matches as $match)
 		{

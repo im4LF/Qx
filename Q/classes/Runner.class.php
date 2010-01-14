@@ -6,16 +6,26 @@ class Runner
 	protected $_controller;
 	protected $_action;
 	protected $_method;
+	protected $_result;
 	
 	function __construct(&$request)
 	{
 		$this->_request =& $request;
 	}
 	
+	function method()
+	{
+		return $this->_method;
+	}
+	
+	function result()
+	{
+		return $this->_result;
+	}
+	
 	function run()
 	{
 		$this->_controller =& $this->_request->router->controller;
-		//echo "controller: {$this->_controller}\n";
 		import::from($this->_controller);
 		
 		// load controller and find method for action
@@ -31,7 +41,6 @@ class Runner
 		{
 			foreach ($this->_method['params'] as $name => $params)
 			{
-				//$method_args[$name] = new $params['type']($this->_request->{$params['from']}[$name]);
 				$method_args[$name] = new $params['type']($this->_request->data($name, $params['from']));
 			}
 		}
@@ -48,22 +57,21 @@ class Runner
 				$have_errors = false;
 				foreach ($this->_method['params'] as $name => $params)
 				{
-					$result = Validator::init(
+					$validation_result = Validator::init(
 						$method_args[$name],	// current value for validation 
 						$method_args,			// array with pointers
 						$this->_controller		// object with defined callback functions
 					)->rules($params['rules'])->validate();
 					
-					if ($result->haveErrors())
+					if ($validation_result->haveErrors())
 						$have_errors = true;
 						
-					$method_args_validation[$name] = $result;
+					$method_args_validation[$name] = $validation_result;
 				}
 				
 				// if validation have errors and auto validation not "soft" - call validation_error method
 				if ($have_errors && !isset($validation_config['auto']['soft']))
 				{
-					// call validation_error method
 					return call_user_method_array($this->_action['method'].'__validation_error', $this->_controller, array($method_args_validation));
 				}
 			}
@@ -84,7 +92,6 @@ class Runner
 				// if result is false and user-defined validation not "soft"
 				if ($have_errors && !isset($validation_config['user']['soft']))
 				{
-					// call validation_error method
 					return call_user_method_array($this->_action['method'].'__validation_error', $this->_controller, array($method_args_validation));
 				}
 			}
@@ -98,7 +105,7 @@ class Runner
 		}
 		
 		// call method
-		$res = call_user_method_array($this->_action['method'], $this->_controller, $method_args);
+		$this->_result = call_user_method_array($this->_action['method'], $this->_controller, $method_args);
 		
 		// if defined after methods
 		if (count($this->_action['params']['after']))
@@ -107,7 +114,7 @@ class Runner
 				call_user_method($method, $this->_controller);
 		}
 		
-		return $res;
+		return $this;
 	}
 	
 	protected function _loadController($controller)
@@ -131,9 +138,6 @@ class Runner
 		
 		$this->_action = $finded_action;
 		$this->_method = $controller_config['methods'][$this->_action['method']];
-		
-		//echo 'action: '.print_r($this->_action, 1)."\n";
-		//echo 'method: '.print_r($this->_method, 1)."\n";
 		
 		if ('@' == $finded_action['method']{0})
 		{

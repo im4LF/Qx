@@ -2,7 +2,7 @@
 return array(
 	'cache' => array(
 		'file' => 'app:cache/import.txt',
-		'enabled' => true
+		'enabled' => false
 	),
 	'scanner' => array(
 		'directories' => array(

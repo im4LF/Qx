@@ -1,11 +1,12 @@
 <?php
 /**
- * @action get:register.* registerForm
+ * @view user/register
+ * @action get:register.* getRegistrationFields
  * @action post:register.json ajaxRegister [after]
  */
 class UserRegister_Action extends Any_Controller
 {
-	function registerForm() {}
+	function getRegistrationFields() {}
 	
 	/**
 	 * @config validation [on, auto]
