@@ -22,20 +22,6 @@ class App
 					'files'		=>& $_FILES
 		))->dispatch();							// run request dispatching
 		
-		// some test requests
-		QF::n('Request', '/user.html')->dispatch();
-		QF::n('Request', '/user/.login.html', array('method'=>'POST'))->dispatch();
-		
-		$reg_data = array(
-			'email' => 'tester@tester.tester',
-			'password' => '123',
-			'confirm_password' => '1234'			
-		);
-		QF::n('Request', '/user/.register.json', array(
-			'method' => 'POST',
-			'post'	 =>& $reg_data
-		))->dispatch();
-		
 		echo 'dt app run: '.Benchmark::stop('app run')->time."\n";
 		
 		//$memory = function_exists('memory_get_usage') ? (memory_get_usage() / 1024 / 1024) : 0;

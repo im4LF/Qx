@@ -4,7 +4,9 @@ return array(
 	'impls' => array(
 		'url'		=> 'SimpleURL',
 		'router'	=> 'MaskRouter',
-		'parser'	=> 'DocCommentParser'
+		'parser'	=> 'DocCommentParser',
+		'html-view'	=> 'SmartyTemplater',
+		'json-view'	=> 'JSONTemplater'
 	),
 	
 	// scenarios for each type of request
@@ -13,14 +15,23 @@ return array(
 		'internal'	=> 'InternalScenario'
 	),
 	
-	// templaters
 	'templaters' => array(
-		'html' => array(
-			'templater' => 'SmartyTemplater'
+		'SmartyTemplater' => array(
+			'lib' => 'q:libs/templaters/Smarty-2.6.25/libs',
+			'config' => array(
+				'template_dir'	=> 'app:views/smarty',
+				'compile_dir'	=> 'app:tmp/smarty_compile',
+				'cache_dir'		=> 'app:cache/smarty_cache',
+				'debugging'		=> false
+			)
 		),
-		'json' => array(
-			'templater' => 'JsonTemplater'
+		
+		'TwigTemplater'	=> array(
+			'lib' => 'q:libs/templaters/Twig',
+			'config' => array(
+				'template_dir'	=> 'app:views/twig',
+			)
 		)
-	)
+	)	
 );
 ?>

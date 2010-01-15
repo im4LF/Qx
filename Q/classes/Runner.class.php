@@ -72,7 +72,8 @@ class Runner
 				// if validation have errors and auto validation not "soft" - call validation_error method
 				if ($have_errors && !isset($validation_config['auto']['soft']))
 				{
-					return call_user_method_array($this->_action['method'].'__validation_error', $this->_controller, array($method_args_validation));
+					$this->_result = call_user_method_array($this->_action['method'].'__validation_error', $this->_controller, array($method_args_validation));
+					return $this;
 				}
 			}
 			
@@ -92,7 +93,8 @@ class Runner
 				// if result is false and user-defined validation not "soft"
 				if ($have_errors && !isset($validation_config['user']['soft']))
 				{
-					return call_user_method_array($this->_action['method'].'__validation_error', $this->_controller, array($method_args_validation));
+					$this->_result =  call_user_method_array($this->_action['method'].'__validation_error', $this->_controller, array($method_args_validation));
+					return $this;
 				}
 			}
 		}
