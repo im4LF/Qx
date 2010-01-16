@@ -1,15 +1,16 @@
 <?php
 class Viewer
 {
+	protected $_request;
+	
+	function __construct(&$request)
+	{
+		$this->_request =& $request;
+	}
+	
 	function view()
 	{
-		$requests = QF::s('RequestManager')->getRequests();
-		
-		$responses = array();
-		foreach ($requests as $url => $request)
-		{
-			echo $url.': '.print_r($request->response, 1);
-		}
+		echo 'current controller:'.$this->_request->router->controller;
 	}
 }
 ?>

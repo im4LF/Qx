@@ -45,7 +45,7 @@ class Request
 		
 		$manager->popRequest();				// pop current request from stack
 		
-		echo 'dt request ['.$this->_raw_url.']: '.Benchmark::stop('request ['.$this->_raw_url.']')->time."\n";
+		Benchmark::stop('request ['.$this->_raw_url.']');
 	}
 }
 ?>

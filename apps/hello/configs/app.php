@@ -4,7 +4,7 @@ return array(
 	'impls' => array(
 		'url'		=> 'SimpleURL',
 		'router'	=> 'MaskRouter',
-		'parser'	=> 'DocCommentParser',
+		'runner'	=> 'RunnerWithValidation',
 		'html-view'	=> 'SmartyTemplater',
 		'json-view'	=> 'JSONTemplater'
 	),

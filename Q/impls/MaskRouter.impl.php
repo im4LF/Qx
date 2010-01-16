@@ -3,10 +3,16 @@
 class MaskRouter 
 {
 	protected $_request;
+	protected $_controller;
 	
 	function __construct(&$request) 
 	{
 		$this->_request =& $request;
+	}
+	
+	function __get($name) 
+	{
+		return $this->{'_'.$name};
 	}
 	
 	function route() 
@@ -21,10 +27,8 @@ class MaskRouter
 			break;
 		}
 		
-		$controller .= '_Controller';
-		return array(
-			'controller' => $controller 
-		);
+		$this->_controller = $controller.'_Controller';
+		return $this;
 	}
 }
 ?>
