@@ -5,18 +5,14 @@ class Q
     {
     	Benchmark::start('app init');
 		
-        foreach ($paths as $key=>$path)				// define path's constants for application, shared and others
+        foreach ($paths as $key=>$path)		// define path's constants for application, shared and others
         {
             define(strtoupper($key).'_PATH', realpath($path));
         }
         
-        $config = import::config('app:import.php');	// load Application import configurations
-        QF::s('Configs')->import = $config;			// save configuration in Configs
-
-		import::s()->configure($config)->scan('app:cache/import.txt'); 	// set configuration and scan new paths 
+		import::scan('app:import.php'); 	// set configuration and scan new paths 
 		
-		//echo 'dt imports:'.print_r(import::s()->stats(), 1);
-		echo 'dt app init: '.Benchmark::stop('app init')->time."\n";
+		Benchmark::stop('app init');
 		
         return QF::n('App');
     }

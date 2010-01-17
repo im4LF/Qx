@@ -12,5 +12,4 @@ echo 'dt all (index.php): '.($t1-$t0)."\n";
 $memory = function_exists('memory_get_usage') ? (memory_get_usage() / 1024 / 1024) : 0;
 echo 'memory: '. number_format($memory, 2)."MB\n";
 echo 'included_files: '.count(get_included_files())."\n";
-echo 'Benchmark: '.print_r(Benchmark::get(), 1);
 ?>

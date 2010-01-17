@@ -2,30 +2,18 @@
 
 class RequestManager 
 {
-	protected $_requests	= array();
-	protected $_stack		= array();
+	protected $_requests;
 	
-	function pushRequest(&$request) 
+	function addRequest(&$request) 
 	{
-		$this->_requests[$request->raw_url] =& $request;
-		array_push($this->_stack, $request);
+		$this->_requests[$request->name] =& $request;
 				
 		return $this;
 	}
 	
-	function getRequests()
+	function __get($name)
 	{
-		return $this->_requests;
-	}
-	
-	function popRequest()
-	{
-		return array_pop($this->_stack);		
-	}
-	
-	function hasExternal()
-	{
-		return (bool) count($this->_requests);
+		return $this->{'_'.$name};
 	}
 }
 ?>

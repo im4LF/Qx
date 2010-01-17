@@ -17,7 +17,7 @@ class Internal_Scenario
 		$this->_request->url		= QF::n($impls['url'], $this->_request->raw_url)->parse();
 		$this->_request->router		= QF::n($impls['router'], $this->_request)->route();
 		$this->_request->runner		= QF::n($impls['runner'], $this->_request)->run();
-		$this->_request->response	= $this->_request->runner->result();
+		$this->_request->response	= $this->_request->runner->result;
 		
 		Benchmark::stop($b_key);
 	}

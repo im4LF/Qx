@@ -13,14 +13,9 @@ class Runner_Impl
 		$this->_request =& $request;
 	}
 	
-	function method()
+	function __get($name)
 	{
-		return $this->_method;
-	}
-	
-	function result()
-	{
-		return $this->_result;
+		return $this->{'_'.$name};
 	}
 	
 	function run()

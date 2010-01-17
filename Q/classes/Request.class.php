@@ -6,11 +6,13 @@ class Request
 	protected $_get;					// $_GET values
 	protected $_post;					// $_POST values
 	protected $_files;					// $_FILES values
+	protected $_name;
 	protected $_scenario = 'internal';	// scenario name, default - "internal"
 	
 	function __construct($url, $params = array()) 
 	{
 		$this->_raw_url = $url;
+		$this->_name = $this->_raw_url;
 		
 		foreach ($params as $name => $value)
 		{
@@ -35,13 +37,9 @@ class Request
 	
 	function dispatch() 
 	{
-		$manager = QF::s('RequestManager');	// get RequestManager
-		$manager->pushRequest($this);		// push current request to RequestManager stack
-		
+		QF::s('RequestManager')->addRequest($this);					// add new Request to RequestManager
 		$scenario = QF::s('Configs')->scenarios[$this->_scenario];	// get scenario name
 		QF::n($scenario, $this)->run();								// run scenario
-		
-		$manager->popRequest();				// pop current request from stack
 	}
 }
 ?>

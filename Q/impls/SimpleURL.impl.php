@@ -62,5 +62,10 @@ class SimpleURL_Impl
         
         return $this;
     }
+	
+	function build()
+	{
+		
+	}
 }
 ?>
