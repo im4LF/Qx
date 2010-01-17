@@ -4,7 +4,7 @@
  * @action get:register.* getRegistrationFields
  * @action post:register.json ajaxRegister [after]
  */
-class UserRegister_Action extends Any_Controller
+class User_Register_Action extends Any_Controller
 {
 	function getRegistrationFields() {}
 	

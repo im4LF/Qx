@@ -4,13 +4,12 @@ return array(
 		'file' => 'app:cache/import.txt',
 		'enabled' => false
 	),
+	
 	'scanner' => array(
-		'directories' => array(
-			'shared:types', 
-			'app:impls', 'app:controllers', 'app:scenarios',
-			'q:classes', 'q:impls'
-		),
-		'filenames'	=> '/\.(class|controller|action|type|impl)\.php$/',
+		'scenarios' => array('app:scenarios'),
+		'impls' => array('q:impls', 'app:impls'),
+		'classes' => array('q:classes', 'app:classes', 'shared:types'),
+		'controllers' => array('app:controllers')
 	)
 );
 ?>

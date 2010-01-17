@@ -3,7 +3,7 @@ define('Q_PATH', realpath(dirname(__FILE__)));
 
 spl_autoload_register(array('import', 'from'));
 
-import::from('q:utils/*');
+import::from('q:classes/utils/*');
 
 class import
 {
@@ -22,26 +22,9 @@ class import
 	
 	protected function __construct()
 	{
-		$this->configure(import::config('q:import.php'))->scan();
+		$this->configure(import::config('q:import.php'));
 	}
 	
-	protected function _timer($key, $mode = 'start')
-	{
-		if ('stop' == $mode)
-		{
-			$this->_stats['timers'][$key][] = microtime(true) - $this->_stats['timers'][$key][-1];
-			unset($this->_stats['timers'][$key][-1]);
-			return;
-		}
-		
-		$this->_stats['timers'][$key][-1] = microtime(true);
-	}
-	
-	function stats()
-	{
-		return $this->_stats;
-	}
-
 	function configure($config = null)
 	{
 		if (!$config) 
@@ -49,88 +32,6 @@ class import
 			
 		$this->_config = $config;
 		return $this;
-	}
-	
-	function scan()
-	{
-		$this->_timer('scan');
-		if (($cache = $this->_cache())) 
-		{
-			$this->_data = $cache;
-			$this->_timer('scan', 'stop');
-			return;
-		}
-		
-		$size = count($this->_config['scanner']['directories']);
-		for ($i = 0; $i < $size; $i++)
-		{
-			list($type, $directory) = explode(':', $this->_config['scanner']['directories'][$i]);
-			$type_const = strtoupper($type).'_PATH';
-			if (!defined($type_const)) 
-				continue;
-			
-			$path = constant($type_const).DIRECTORY_SEPARATOR.$directory;
-			$this->_scanDirectory($path);
-		}
-		
-		$this->_cache($this->_data);
-		$this->_timer('scan', 'stop');
-	}
-	
-	protected function _cache($value = null)
-	{
-		if (!$this->_config['cache']['enabled'])
-			return false;
-
-		$cache_file = $this->_config['cache']['file'];
-		
-		list($type, $cache_file) = explode(':', $cache_file);
-		$type_const = strtoupper($type).'_PATH';
-		if (!defined($type_const)) 
-			return false;
-		
-		$cache_file = constant($type_const).DIRECTORY_SEPARATOR.$cache_file;
-		
-		if (!$value && !file_exists($cache_file))	// value not set - its mean load from cache 
-			return false;
-			
-		if ($value) // save to cache
-		{
-			file_put_contents($cache_file, serialize($value));
-			return true;
-		}
-		
-		return unserialize(file_get_contents($cache_file));
-	}
-	
-	protected function _scanDirectory($path)
-	{
-		if (!file_exists($path)) 
-			return;
-		
-		$di = new RecursiveDirectoryIterator($path);
-		foreach (new RecursiveIteratorIterator($di) as $fileinfo)
-		{
-			$filename = $fileinfo->getPathname();
-			
-			if (!preg_match($this->_config['scanner']['filenames'], $filename)) 
-				continue;
-				
-			$content = file_get_contents($filename);
-            if (!preg_match_all('/^\s*class\s+(\w+)/im', $content, $matches, PREG_SET_ORDER)) 
-				continue;
-               
-			$this->_data->files[$filename] = @$this->_data->files[$filename];
-			    
-            foreach ($matches as $match)
-            {
-				$this->_data->classes[$match[1]] = array(
-					'name' => $match[1],
-					'path' => $filename,
-					'loaded' =>& $this->_data->files[$filename]
-				);
-            }
-		}			
 	}
 	
 	static function from($mask)
@@ -159,28 +60,73 @@ class import
 	
 	function importClass($class_name)
     {
-		if (!array_key_exists($class_name, $this->_data->classes))	// class not found
-			throw new Exception("class [$class_name] not found");
-
-		if ($this->_data->classes[$class_name]['loaded'])	// class already loaded 
-			return; 
- 
-		require($this->_data->classes[$class_name]['path']);	// load file
-		$this->_data->classes[$class_name]['loaded'] = true;
+    	Benchmark::start("load class [$class_name]");
+    	if ($this->_data['classes'][$class_name]['loaded'])	// class already loaded 
+			return;
+			
+		$class_type = 'Class';
+		if (false !== strpos($class_name, '_'))
+		{
+			$class_name_segments = explode('_', $class_name);
+			$class_type = array_pop($class_name_segments);
+		}
+			
+		$scan_directories = $this->_config['scanner']['classes'];
+		$class_file = $class_name.'.class.php';
+		
+		if ('Scenario' === $class_type)
+		{
+			$scan_directories = $this->_config['scanner']['scenarios'];
+			$class_file = $class_name_segments[0].'.scenario.php';
+		}
+		elseif ('Controller' === $class_type)
+		{
+			$scan_directories = $this->_config['scanner']['controllers'];
+			$class_file = $class_name_segments[0].'.controller.php';
+		}
+		elseif ('Action' === $class_type)
+		{
+			$scan_directories = $this->_config['scanner']['controllers'];
+			$class_file = $class_name_segments[0].'.actions'.DIRECTORY_SEPARATOR.$class_name_segments[0].'_'.$class_name_segments[1].'.action.php';
+		}
+		elseif ('Impl' === $class_type)
+		{
+			$scan_directories = $this->_config['scanner']['impls'];
+			$class_file = $class_name_segments[0].'.impl.php';
+		}
+		
+		$found = false;
+		for ($i = 0; $i < count($scan_directories); $i++)
+		{
+			if (false === ($path = $this->_buildPath($scan_directories[$i])))
+				continue;
+			
+			$path = $path.DIRECTORY_SEPARATOR.$class_file;
+			
+			if (!file_exists($path))
+				continue;
+				
+			$found = true;
+			break;
+		}	
+		
+		//echo "$class_name: file - $class_file, type - $class_type, path - $path\n";
+		
+		if (!$found)
+			throw new Exception("class [$class_name] not found.");	
+		
+		//echo "$class_name: $path\n";
+		
+		$this->_importFile($path);
+		$this->_data['classes'][$class_name] = true;
+		Benchmark::stop("load class [$class_name]");
 	}
 	
 	function importFiles($path)
     {
-        list($type, $path) = explode(':', $path);
-		
-		$type_const = strtoupper($type).'_PATH';
-		
-		if (!defined($type_const)) 
-			throw new Exception($type.' not defined');
+        if (false === ($path = $this->_buildPath($path)))
+			throw new Exception("type of [$path] not defined");
 			
-        $path = str_replace('/', DIRECTORY_SEPARATOR, $path);
-        $path = constant($type_const).DIRECTORY_SEPARATOR.$path;
-
         if (strpos($path, '*'))	// import directory recursively
         {
         	foreach (glob($path) as $item)
@@ -200,13 +146,28 @@ class import
             $this->_importFile($path.'.php');
     }
 	
+	protected function _buildPath($path)
+	{
+		list($type, $path) = explode(':', $path);
+		
+		$type_const = strtoupper($type).'_PATH';
+		
+		if (!defined($type_const))
+			return false;
+			
+		$path = str_replace('/', DIRECTORY_SEPARATOR, $path);
+        $path = constant($type_const).DIRECTORY_SEPARATOR.$path;
+		
+		return $path;
+	}
+	
     protected function _importFile($path)
     {
-    	if (!preg_match('/\.php$/', $path) || isset($this->_data->files[$path])) 
+    	if (!preg_match('/\.php$/', $path) || isset($this->_data['files'][$path])) 
 			return;
 
 		require($path);		
-		$this->_data->files[$path] = true;
+		$this->_data['files'][$path] = true;
     }
 }
 ?>

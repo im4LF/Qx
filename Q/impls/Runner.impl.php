@@ -1,5 +1,5 @@
 <?php
-class Runner
+class Runner_Impl
 {
 	protected $_request;
 	protected $_parser;
@@ -29,7 +29,7 @@ class Runner
 		import::from($this->_controller);
 		
 		// load controller and find method for action
-		$this->_parser = QF::n(QF::s('Configs')->impls['parser']);
+		$this->_parser = new DocCommentParser;
 		$this->_loadController($this->_controller);
 		$this->_parser = null;
 		

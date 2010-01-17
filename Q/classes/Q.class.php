@@ -13,7 +13,7 @@ class Q
         $config = import::config('app:import.php');	// load Application import configurations
         QF::s('Configs')->import = $config;			// save configuration in Configs
 
-		import::s()->configure($config)->scan('app:cache/import.txt'); 	// set configuration and scan new paths 
+		import::s()->configure($config); 			// set configuration and scan new paths 
 		
 		//echo 'dt imports:'.print_r(import::s()->stats(), 1);
 		echo 'dt app init: '.Benchmark::stop('app init')->time."\n";

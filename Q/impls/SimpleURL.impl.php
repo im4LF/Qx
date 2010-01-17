@@ -1,5 +1,5 @@
 <?php 
-class SimpleURL
+class SimpleURL_Impl
 {
     protected $_raw_url;
 	protected $_path;
@@ -16,6 +16,11 @@ class SimpleURL
         $this->_args	= array();
         $this->_view	= 'html';
     }
+	
+	function __get($name) 
+	{
+		return $this->{'_'.$name};
+	}
     
     function parse()
     {
@@ -55,13 +60,7 @@ class SimpleURL
         $this->_path = preg_replace('/\/+/', '/', $this->_path);
         $this->_path .= $this->_path {strlen($this->_path) - 1} == '/' ? '' : '/';
         
-        return array(
-			'path'		=> $this->_path,
-			'action'	=> $this->_action,
-			'state'		=> $this->_state,
-			'args'		=> $this->_args,
-			'view'		=> $this->_view,
-		);
+        return $this;
     }
 }
 ?>
