@@ -1,5 +1,5 @@
 <?php 
-class SimpleURL
+class SimpleURL_Impl
 {
     protected $_raw_url;
 	protected $_path;

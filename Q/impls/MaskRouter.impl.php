@@ -1,6 +1,6 @@
 <?php
 
-class MaskRouter 
+class MaskRouter_Impl
 {
 	protected $_request;
 	protected $_controller;

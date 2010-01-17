@@ -1,5 +1,5 @@
 <?php
-class RunnerWithValidation
+class Runner_Impl
 {
 	protected $_request;
 	protected $_parser;

@@ -10,7 +10,7 @@ return array(
 			'app:impls', 'app:controllers', 'app:scenarios',
 			'q:classes', 'q:impls'
 		),
-		'filenames'	=> '/\.(class|controller|action|type|impl)\.php$/',
+		'filenames'	=> '/\.(class|controller|action|type|impl|scenario)\.php$/',
 	)
 );
 ?>

@@ -2,17 +2,17 @@
 return array(
 	// implementations
 	'impls' => array(
-		'url'		=> 'SimpleURL',
-		'router'	=> 'MaskRouter',
-		'runner'	=> 'RunnerWithValidation',
-		'html-view'	=> 'SmartyTemplater',
-		'json-view'	=> 'JSONTemplater'
+		'url'		=> 'SimpleURL_Impl',
+		'router'	=> 'MaskRouter_Impl',
+		'runner'	=> 'Runner_Impl',
+		'html-view'	=> 'SmartyTemplater_Impl',
+		'json-view'	=> 'JSONTemplater_Impl'
 	),
 	
 	// scenarios for each type of request
 	'scenarios' => array(
-		'external'	=> 'ExternalScenario',
-		'internal'	=> 'InternalScenario'
+		'external'	=> 'External_Scenario',
+		'internal'	=> 'Internal_Scenario'
 	),
 	
 	'templaters' => array(

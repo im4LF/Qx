@@ -13,7 +13,7 @@
  * # if "class method" starts with "@" -	its mean that controll will be passed to 
  * #										another controller called action 
  * 
- * @action *:register.* @UserRegister_Action
+ * @action *:register.* @User_Register_Action
  * @action get:login.* loginForm
  * 
  * # [before method1 method2, after method3] mean than "before" and "after" calling controller method 

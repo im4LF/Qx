@@ -3,7 +3,7 @@ define('Q_PATH', realpath(dirname(__FILE__)));
 
 spl_autoload_register(array('import', 'from'));
 
-import::from('q:utils/*');
+import::from('q:classes/utils/*');
 
 class import
 {
