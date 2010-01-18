@@ -36,13 +36,9 @@ class QF
 	{
 		$args = func_get_args();
 		$class_name = array_shift($args);
-		if (false !== ($pos = strpos($class_name, ':'))) 
-		{
-			import::from($class_name);
-			$class_name = substr($class_name, $pos+1);
-		}
+		
 		$reflection = new ReflectionClass($class_name);
-		if ($reflection->hasMethod('__construct'))
+		if (count($args))
 			return $reflection->newInstanceArgs($args);
 		
 		return $reflection->newInstance();
