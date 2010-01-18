@@ -2,12 +2,9 @@
 class TwigTemplater_Impl
 {
 	protected $_twig;
-	protected $_template;
 	
-	function __construct($template)
+	function __construct()
 	{
-		$this->_template = $template.'.html';
-		
 		$config = import::config('app:twig-templater.php');
 
 		import::from($config['lib']);
@@ -20,9 +17,9 @@ class TwigTemplater_Impl
 		));
 	}
 	
-	function view($data)
+	function view($data, $template_name)
 	{
-		$template = $this->_twig->loadTemplate($this->_template);
+		$template = $this->_twig->loadTemplate($template_name.'.html');
 		return $template->render($data);
 	}
 }

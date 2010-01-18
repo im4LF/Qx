@@ -1,47 +1,44 @@
 <?php
 class Runner_Impl
 {
-	protected $_request;
+	public $request;
+	public $action;
+	public $method;
+	public $result;
+	public $controller_name;
+	
+	protected $_action_key;
 	protected $_parser;
-	protected $_controller;
-	protected $_action;
-	protected $_method;
-	protected $_result;
 	
 	function __construct(&$request)
 	{
-		$this->_request =& $request;
-	}
-	
-	function __get($name)
-	{
-		return $this->{'_'.$name};
+		$this->request =& $request;
 	}
 	
 	function run()
 	{
-		$this->_controller =& $this->_request->router->controller;
-		import::from($this->_controller);
+		$this->controller_name =& $this->request->router->controller;
+		import::from($this->controller_name);
 		
-		// load controller and find method for action
-		$this->_parser = QF::n('DocCommentParser');
-		$this->_loadController($this->_controller);
+		$this->_action_key = $this->request->method.':'.$this->request->url->action.'.'.$this->request->url->view;
+		
+		$this->_parser = QF::n('DocCommentParser');					// init controller configuration parser
+		$this->_findControllerAndMethod($this->controller_name);	// find real controller name and method for requested action
 		$this->_parser = null;
 		
-		$this->_controller = new $this->_controller($this->_request);
+		$controller = QF::n($this->controller_name, $this->request);	// create controller object
 		
 		// build method args array
 		$method_args = array();
-		if (isset($this->_method['params']))
+		if (isset($this->method['params']))
 		{
-			foreach ($this->_method['params'] as $name => $params)
+			foreach ($this->method['params'] as $name => $params)
 			{
-				$method_args[$name] = new $params['type']($this->_request->data($name, $params['from']));
+				$method_args[$name] = QF::n($params['type'], $this->request->data($name, $params['from']));
 			}
 		}
 
-		// validation
-		$validation_config = $this->_method['configs']['validation'];
+		$validation_config = $this->method['configs']['validation'];	// get validation configuration
 		$method_args_validation = array();
 		
 		// if validation is enabled
@@ -50,12 +47,12 @@ class Runner_Impl
 			if (isset($validation_config['auto'])) // auto validation enabled
 			{
 				$have_errors = false;
-				foreach ($this->_method['params'] as $name => $params)
+				foreach ($this->method['params'] as $name => $params)
 				{
 					$validation_result = Validator::init(
 						$method_args[$name],	// current value for validation 
 						$method_args,			// array with pointers
-						$this->_controller		// object with defined callback functions
+						$controller				// object with defined callback functions
 					)->rules($params['rules'])->validate();
 					
 					if ($validation_result->haveErrors())
@@ -67,7 +64,8 @@ class Runner_Impl
 				// if validation have errors and auto validation not "soft" - call validation_error method
 				if ($have_errors && !isset($validation_config['auto']['soft']))
 				{
-					$this->_result = call_user_method_array($this->_action['method'].'__validation_error', $this->_controller, array($method_args_validation));
+					$this->result = call_user_method_array($this->action['method'].'__validation_error', $controller, array($method_args_validation));
+					unset($controller);
 					return $this;
 				}
 			}
@@ -75,11 +73,12 @@ class Runner_Impl
 			if (isset($validation_config['user'])) // user validation enabled
 			{
 				// call user-defined validation method
-				$method_args_validation = call_user_method_array($this->_action['method'].'__validate', $this->_controller, array($method_args_validation));
+				$method_args_validation = call_user_method_array($this->action['method'].'__validate', $controller, array($method_args_validation));
 				$have_errors = false;
 				foreach ($method_args_validation as $field)
 				{
-					if (!$field->haveErrors()) continue;
+					if (!$field->haveErrors()) 
+						continue;
 					
 					$have_errors = true;
 					break;
@@ -88,58 +87,59 @@ class Runner_Impl
 				// if result is false and user-defined validation not "soft"
 				if ($have_errors && !isset($validation_config['user']['soft']))
 				{
-					$this->_result =  call_user_method_array($this->_action['method'].'__validation_error', $this->_controller, array($method_args_validation));
+					$this->result =  call_user_method_array($this->action['method'].'__validation_error', $controller, array($method_args_validation));
+					unset($controller);
 					return $this;
 				}
 			}
 		}
 		
 		// if defined before methods
-		if (count($this->_action['params']['before']))
+		if (count($this->action['params']['before']))
 		{
-			foreach ($this->_action['params']['before'] as $method => $buf)
-				call_user_method($method, $this->_controller);
+			foreach ($this->action['params']['before'] as $method => $buf)
+				call_user_method($method, $controller);
 		}
 		
 		// call method
-		$this->_result = call_user_method_array($this->_action['method'], $this->_controller, $method_args);
+		$this->result = call_user_method_array($this->action['method'], $controller, $method_args);
 		
 		// if defined after methods
-		if (count($this->_action['params']['after']))
+		if (count($this->action['params']['after']))
 		{
-			foreach ($this->_action['params']['after'] as $method => $buf)
-				call_user_method($method, $this->_controller);
+			foreach ($this->action['params']['after'] as $method => $buf)
+				call_user_method($method, $controller);
 		}
 		
+		unset($controller);
 		return $this;
 	}
 	
-	protected function _loadController($controller)
+	protected function _findControllerAndMethod($controller_name)
 	{
-		if (!isset(QF::s('Configs')->controllers[$controller]))
+		if (!isset(QF::s('Configs')->controllers[$controller_name]))
 		{
-			QF::s('Configs')->controllers[$controller] = $this->_parser->parse($controller);
+			QF::s('Configs')->controllers[$controller_name] = $this->_parser->parse($controller_name);
 		}
 		
-		$controller_config = QF::s('Configs')->controllers[$controller];
+		$controller_config = QF::s('Configs')->controllers[$controller_name];
 		
-		$action_key = $this->_request->method.':'.$this->_request->url->action.'.'.$this->_request->url->view;
 		$finded_action = null;
 		foreach ($controller_config['actions'] as $action)
 		{
-			if (!preg_match($action['regex'], $action_key)) continue;
+			if (!preg_match($action['regex'], $this->_action_key)) 
+				continue;
 			
 			$finded_action = $action;
 		}
 		
+		$this->action = $finded_action;
+		$this->method = $controller_config['methods'][$this->action['method']];
 		
-		$this->_action = $finded_action;
-		$this->_method = $controller_config['methods'][$this->_action['method']];
-		
-		if ('@' == $finded_action['method']{0})
+		if ('@' === $finded_action['method']{0})
 		{
-			$this->_controller = substr($finded_action['method'], 1);
-			$this->_loadController($this->_controller);
+			$this->controller_name = substr($finded_action['method'], 1);
+			$this->_findControllerAndMethod($this->controller_name);
 		}	
 	}
 }

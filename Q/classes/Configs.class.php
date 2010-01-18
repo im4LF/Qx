@@ -1,6 +1,8 @@
 <?php
 class Configs 
 {
+	public $keys;
+	
 	function __set($name, $value) 
 	{
 		$this->$name = $value;
@@ -8,10 +10,9 @@ class Configs
 	
 	function __get($name) 
 	{
-		if ( !isset($this->$name) ) 
-		{
+		if (!isset($this->$name)) 
 			$this->$name = null;
-		}
+
 		return $this->$name;
 	}
 }

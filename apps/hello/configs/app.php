@@ -2,6 +2,7 @@
 return array(
 	// implementations
 	'impls' => array(
+		'cache'		=> 'FileCache_Impl',
 		'url'		=> 'SimpleURL_Impl',
 		'router'	=> 'MaskRouter_Impl',
 		'runner'	=> 'Runner_Impl',

@@ -2,22 +2,18 @@
 
 class MaskRouter_Impl
 {
-	protected $_request;
-	protected $_controller;
+	public $request;
+	public $controller;
 	
 	function __construct(&$request) 
 	{
-		$this->_request =& $request;
-	}
-	
-	function __get($name) 
-	{
-		return $this->{'_'.$name};
+		$this->request =& $request;
 	}
 	
 	function route() 
 	{
-		$path = $this->_request->url->path;
+		$path = $this->request->url->path;
+		
 		$map = import::config('app:router.php');
 		
 		foreach ( $map as $regex => $controller ) 
@@ -27,7 +23,7 @@ class MaskRouter_Impl
 			break;
 		}
 		
-		$this->_controller = $controller.'_Controller';
+		$this->controller = $controller.'_Controller';
 		return $this;
 	}
 }

@@ -1,18 +1,17 @@
 <?php 
 class DocCommentParser
 {
-	protected $_reflection;
 	protected $_config;
 	
 	function parse($class_name)
 	{
-		$this->_reflection = new ReflectionClass($class_name);
-		$doc_comment = $this->_reflection->getDocComment();
+		$reflection = new ReflectionClass($class_name);
+		$doc_comment = $reflection->getDocComment();
 		
 		$this->_parseActions($doc_comment);
 		$this->_parseViews($doc_comment);
 		
-		$methods = $this->_reflection->getMethods(ReflectionMethod::IS_PUBLIC);
+		$methods = $reflection->getMethods(ReflectionMethod::IS_PUBLIC);
 		foreach ($methods as $method)
 		{
 			if (!($doc_comment = $method->getDocComment())) continue;

@@ -5,5 +5,10 @@
 		<title>{{ title }}</title>
 	</head>
 	<body>
+		<ul>
+		  {%for k, v in __debug__.benchmarks%}
+		    <li>{{k}}: {{v.time}}, {{v.memory/1024/1204}}MB</li>
+		  {%endfor%}
+		</ul>
 	</body>
 </html>
