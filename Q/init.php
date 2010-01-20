@@ -1,15 +1,15 @@
 <?php 
 define('Q_PATH', realpath(dirname(__FILE__)));
 
-import::configure('q:import.php');
-import::register();
-import::from('q:utils/Benchmark');
+import::configure('q:import.php');	// configure import
+import::register();					// register autoloader
+import::from('q:utils/Benchmark');	// import Q_PATH/utils/Benchmark.EXT
+import::from('q:utils/F');			// import Q_PATH/utils/F.EXT - factory class
 
 $key = 'start';
 uBenchmark::start($key);
 
-new uDocCommentParser;
-new uF;
+uF::n('Request', 'test', array('qwe', 1, 'asd'));
 
 uBenchmark::stop($key);
 print_r(uBenchmark::get());
@@ -19,6 +19,7 @@ class import
 	private static $_config;
 	private static $_data;
 	private static $_ext_mask;
+	private static $_counter;
 	
 	static function configure($config_file)
 	{
@@ -38,9 +39,8 @@ class import
 	
 	static function config($path)
 	{
-		$spos = strpos($path, ':');
-		if (false === ($path = self::buildPath(substr($path, 0, $spos).':configs/'.substr($path, 1+$spos)))
-			|| !file_exists($path))
+		list ($type, $path) = explode(':', $path);
+		if (false === ($path = self::buildPath($type.':configs/'.$path)) || !file_exists($path))
 			return;
 			
 		return require($path);
@@ -56,14 +56,20 @@ class import
 	
 	static function importClass($class_name)
     {
-    	$key = "load [$class_name]";
+    	$key = "load #". ++self::$_counter ." [$class_name]";
     	uBenchmark::start($key);
     	$m = array();
-		if (!preg_match('/^([a-z])[A-Z]/', $class_name, $m) || !array_key_exists($m[1], self::$_config['scanner']))
-			return false;
 		
-		$class_file = str_replace('_', DIRECTORY_SEPARATOR, substr($class_name, 1)).self::$_config['ext'];
-		$paths = self::$_config['scanner'][$m[1]];
+		$paths = self::$_config['scanner']['classes'];
+		
+		if (preg_match('/^([a-z])[A-Z]/', $class_name, $m) && count($m) && array_key_exists($m[1], self::$_config['scanner']))
+		{
+			$paths = self::$_config['scanner'][$m[1]];
+			$class_name = substr($class_name, 1);
+		}
+		
+		$class_file = str_replace('_', DIRECTORY_SEPARATOR, $class_name).self::$_config['ext'];
+		
 		if (!is_array($paths) && false !== ($paths = self::buildPath($paths)))
 		{
 			$filename = $paths.DIRECTORY_SEPARATOR.$class_file;

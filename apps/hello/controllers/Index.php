@@ -2,7 +2,7 @@
 /**
  * @view index
  */
-class cIndex extends cAny
+class xIndex extends xAny
 {
 	/**
 	 * @action *:*.*

@@ -1,5 +1,5 @@
 <?php
-class cAny
+class xAny
 {
 	protected $_request;
 	

@@ -2,18 +2,18 @@
 return array(
 	// implementations
 	'impls' => array(
-		'cache'		=> 'FileCache_Impl',
-		'url'		=> 'SimpleURL_Impl',
-		'router'	=> 'MaskRouter_Impl',
-		'runner'	=> 'Runner_Impl',
-		'html-view'	=> 'TwigTemplater_Impl',
-		'json-view'	=> 'JSONTemplater_Impl'
+		'cache'		=> 'iCache_File',
+		'url'		=> 'iURL_Simple',
+		'router'	=> 'iRouter_Mask',
+		'runner'	=> 'iRunner',
+		'html-view'	=> 'iTemplater_Twig',
+		'json-view'	=> 'iTemplater_Json'
 	),
 	
 	// scenarios for each type of request
 	'scenarios' => array(
-		'external'	=> 'External_Scenario',
-		'internal'	=> 'Internal_Scenario'
+		'external'	=> 'sExternal',
+		'internal'	=> 'sInternal'
 	)	
 );
 ?>

@@ -1,16 +1,14 @@
 <?php
 return array(
-	'cache' => array(
-		'file' => 'app:cache/import.txt',
-		'enabled' => false
-	),
+	'ext' => '.php',
 	'scanner' => array(
-		'directories' => array(
-			'shared:types', 
-			'app:impls', 'app:controllers', 'app:scenarios',
-			'q:classes', 'q:impls'
-		),
-		'filenames'	=> '/\.(class|controller|action|type|impl|scenario)\.php$/',
+		'classes' => array('q:classes', 'app:classes'),
+		'i' => array('q:impls', 'app:impls'),	// implementations
+		's' => 'app:scenarios',					// scenarios
+		'x' => 'app:controllers',				// controllers
+		't' => 'shared:types',					// types
+		'm' => 'app:models',					// models
+		'u' => array('q:utils', 'app:utils')	// utils
 	)
 );
 ?>
