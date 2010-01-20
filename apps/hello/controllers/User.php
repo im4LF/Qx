@@ -13,7 +13,7 @@
  * # if "class method" starts with "@" -	its mean that controll will be passed to 
  * #										another controller called action 
  * 
- * @action *:register.* @User_Register_Action
+ * @action *:register.* @cUser_Register
  * @action get:login.* loginForm
  * 
  * # [before method1 method2, after method3] mean than "before" and "after" calling controller method 
@@ -21,7 +21,7 @@
  * 
  * @action post:login.json ajaxLogin [before ajaxLogin__before, after loginUser]
  */
-class User_Controller extends Any_Controller
+class cUser extends cAny
 {
 	function index() {}
 	
@@ -45,8 +45,8 @@ class User_Controller extends Any_Controller
 	 * #    default option is "strict"
 	 * @config validation [on, auto]
 	 * 
-	 * @param Email  $email		post [required, valid, exists]
-	 * @param String $password	post [required, min(6) as min]
+	 * @param TEmail  $email		post [required, valid, exists]
+	 * @param TString $password	post [required, min(6) as min]
 	 */
 	function ajaxLogin($email, $password) {}
 	
@@ -58,8 +58,10 @@ class User_Controller extends Any_Controller
 	 * @action post:login.* [after clearOldLogin loginUser]
 	 * 
 	 * @config validation [on, auto soft, user]
-	 * @param Email  $email 	post [required, valid, exists]
-	 * @param String $password	post [required, min(6) as min]
+	 * @param TEmail  $email 	post [required, valid, exists]
+	 * @param TString $password	post [required, min(6) as min]
+	 * @param Email_Type  $email 	post [required, valid, exists]
+	 * @param String_Type $password	post [required, min(6) as min]
 	 */
 	function simpleLogin($email, $password) 
 	{

@@ -1,6 +1,6 @@
 <?php
 
-class MaskRouter_Impl
+class iRouter_Mask
 {
 	public $request;
 	public $controller;

@@ -1,5 +1,5 @@
 <?php
-class Any_Scenario
+class sAny
 {
 	public $request;
 	protected $_impls;

@@ -1,5 +1,5 @@
 <?php 
-class Email extends String
+class tEmail extends tString
 {
     function valid()
     {

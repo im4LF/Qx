@@ -1,5 +1,5 @@
 <?php
-class Benchmark
+class uBenchmark
 {
 	protected static $_marks;
 	

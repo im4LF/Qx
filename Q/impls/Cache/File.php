@@ -1,5 +1,5 @@
 <?php
-class FileCache_Impl
+class iCache_File
 {
 	protected $_cache_file;
 	protected $_keys;

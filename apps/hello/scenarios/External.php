@@ -1,5 +1,5 @@
 <?php
-class External_Scenario extends Any_Scenario
+class sExternal extends sAny
 {
 	function run()
 	{

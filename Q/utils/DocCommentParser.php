@@ -1,5 +1,5 @@
 <?php 
-class DocCommentParser
+class uDocCommentParser
 {
 	protected $_config;
 	

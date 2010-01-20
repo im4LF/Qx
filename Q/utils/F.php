@@ -1,8 +1,8 @@
 <?php
 /**
- * Q factory class
+ * Factory class
  */
-class QF 
+class uF 
 {
 	protected static $_instances; 
 

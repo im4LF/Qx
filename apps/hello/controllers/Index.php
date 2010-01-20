@@ -2,7 +2,7 @@
 /**
  * @view index
  */
-class Index_Controller extends Any_Controller
+class cIndex extends cAny
 {
 	/**
 	 * @action *:*.*

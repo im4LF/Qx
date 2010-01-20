@@ -1,5 +1,5 @@
 <?php
-class Any_Controller
+class cAny
 {
 	protected $_request;
 	

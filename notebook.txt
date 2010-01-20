@@ -1,0 +1,113 @@
+# controllers
+Any_Controller              = controllers/Any.php
+User_Controller             = controllers/User.php
+Register_User_Controller    = controllers/User/Register.php
+Auth_User_Controller        = controllers/User/Auth.php
+News_Controller             = controllers/News.php
+Post_News_Controller        = controllers/News/Post.php
+Moderate_News_Controller    = controllers/News/Moderate.php
+
+# types
+Any_Type                    = types/Any.php
+String_Type                 = types/String.php
+Email_Type                  = types/Email.php
+
+# scenarios
+Any_Scenario                = scenarios/Any.php
+External_Scenario           = scenarios/External.php
+Internal_Scenario           = scenarios/Internal.php
+
+# utils
+F_Util                      = utils/F.php
+Benchmark_Util              = utils/Benchmark.php
+Cache_Util                  = utils/Cache.php
+
+# implementations
+File_Cache_Impl             = impls/Cache/File.php
+Memcache_Cache_Impl         = impls/Cache/Memcache.php
+
+Simple_URL_Impl             = impls/URL/Simple.php
+DB_URL_Impl                 = impls/URL/DB.php
+
+Mask_Router_Impl            = impls/Router/Mask.php
+DB_Router_Impl              = impls/Router/DB.php
+
+# simple classes
+Request                     = classes/Request.php
+
+# ==============================================================
+
+# types
+TAny        = types/Any.php
+TString     = types/String.php
+TEmail      = types/Email.php
+TInteger    = types/Integer.php
+TFloat      = types/Float.php
+
+# controllers
+CAny            = controllers/Any.php
+CUser           = controllers/User.php
+CRegister_User  = controllers/User/Register.php
+
+# implementations
+IFile_Cache     = impls/Cache/File.php
+IMemcache_Cache = impls/Cache/Memcache.php
+
+ISimple_URL     = impls/URL/Simple.php
+IDB_URL         = impls/URL/DB.php
+
+IMask_Router    = impls/Router/Mask.php
+IDB_Router      = impls/Router/DB.php
+
+UF              = utils/F.php
+UBenchmark      = utils/Benchmark.php
+UCache          = utils/Cache.php
+
+# ==============================================================
+
+Any_Controller              = controllers/Any.php
+User_Controller             = controllers/User.php
+User_Register_Controller    = controllers/User/Register.php
+User_Auth_Controller        = controllers/User/Auth.php
+News_Controller             = controllers/News.php
+News_Posts_Controller       = controllers/News/Post.php
+News_Moderate_Controller    = controllers/News/Moderate.php
+
+# implementations
+Cache_File_Impl             = impls/Cache/File.php
+Cache_Memcache_Impl         = impls/Cache/Memcache.php
+
+URL_Simple_Impl             = impls/URL/Simple.php
+URL_DB_Impl                 = impls/URL/DB.php
+
+Router_Mask_Impl            = impls/Router/Mask.php
+Router_DB_Impl              = impls/Router/DB.php
+
+# ==============================================================
+
+cAny              = controllers/Any.php
+cUser             = controllers/User.php
+cUser_Register    = controllers/User/Register.php
+cUser_Auth        = controllers/User/Auth.php
+cNews             = controllers/News.php
+cNews_Posts       = controllers/News/Post.php
+cNews_Moderate    = controllers/News/Moderate.php
+
+# implementations
+iCache_File             = impls/Cache/File.php
+iCache_Memcache         = impls/Cache/Memcache.php
+iCache_Interface        = impls/Cache/Interface.php
+
+iURL_Simple             = impls/URL/Simple.php
+iURL_DB                 = impls/URL/DB.php
+iURL_Interface          = impls/URL/Interface.php.php
+
+iRouter_Mask            = impls/Router/Mask.php
+iRouter_DB              = impls/Router/DB.php
+iRouter_Interface       = impls/Router/Interface.php
+
+tString					= types/String.php
+tEmail					= types/Email.php
+tInteger				= types/Integer.php
+tFloat					= types/Float.php
+

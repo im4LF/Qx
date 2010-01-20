@@ -1,5 +1,5 @@
 <?php
-class TwigTemplater_Impl
+class iTemplater_Twig
 {
 	protected $_twig;
 	
