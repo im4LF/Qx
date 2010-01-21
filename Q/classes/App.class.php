@@ -3,7 +3,7 @@ class App
 {
 	static function run($paths) 
 	{
-		Benchmark::start('App::run');
+		Benchmark::start('App::init');
 		
         foreach ($paths as $key=>$path)		// define path's constants for application, shared and others
         {
@@ -13,15 +13,21 @@ class App
 		import::configure('app:import.php');	// set new import configuration	
 		import::scan(); 						// and scan new paths 
 		
-		$config = import::config('app:app.php');	// import application configuration
-		foreach ($config as $key => $value)			// save all configuration sections in configs		
+		$caches_configs = import::config('app:caches.php');	// caches configuration
+		F::s('Configs')->caches = $caches_configs;			// save configurations
+		foreach ($caches_configs as $key => $config)		// initialize all autoload caches
 		{
-			F::s('Configs')->$key = $value;
+			if (!$config['autoload'])	// if cache not autoload
+				continue;
+				
+			echo "Cache:$key\n";
+			F::r('Cache:'.$key, $config)->load();
 		}
 		
-		Benchmark::stop('App::run');
+		F::s('Configs')->impls = import::config('app:impls.php');			// impls configuration
+		F::s('Configs')->scenarios = import::config('app:scenarios.php');	// scenarios configuration
 		
-		F::s('Cache', $config['impls']['cache'])->load();
+		Benchmark::stop('App::init');
 		
 		// create new external request
 		F::n('Request', 
@@ -35,7 +41,13 @@ class App
 					'files'		=>& $_FILES
 		))->dispatch();							// run request dispatching
 		
-		F::s('Cache')->save();
+		foreach ($caches_configs as $key => $config)	// save all autosave caches
+		{
+			if (!$config['autosave'])	// if cache not autosave
+				continue;
+				
+			F::r('Cache:'.$key)->save();		
+		}
 		
 		echo print_r(Benchmark::get(), 1);
 	}

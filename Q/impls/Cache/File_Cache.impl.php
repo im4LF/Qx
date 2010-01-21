@@ -1,38 +1,26 @@
 <?php
 class File_Cache_Impl
 {
-	protected $_cache_file;
-	protected $_keys;
+	protected $_config;
 	
 	function __construct($config)
 	{
-		$this->_cache_file = $config['file'];
-		return $this;
-	}
-	
-	function get($key)
-	{
-		if (!isset($this->_keys[$key]))
-			return false;
-			
-		return $this->_keys[$key];
-	}
-	
-	function set($key, $value = null)
-	{
-		$this->_keys[$key] = $value;
+		$this->_config = $config;
 	}
 	
 	function load()
 	{
-		$this->_keys = unserialize(file_get_contents($this->_cache_file));
-		return $this;
+		$filename = import::buildPath($this->_config['file']);
+		if (!file_exists($filename))
+			return false;
+			
+		return unserialize(file_get_contents($filename));
 	}
 	
-	function save()
+	function save($values)
 	{
-		file_put_contents($this->_cache_file, serialize($this->_keys));
-		return $this;
+		$filename = import::buildPath($this->_config['file']);
+		file_put_contents($filename, serialize($values));
 	}
 }
 ?>

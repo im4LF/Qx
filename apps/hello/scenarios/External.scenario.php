@@ -20,7 +20,7 @@ class External_Scenario extends Any_Scenario
 	function done()
 	{
 		// prepare data for view
-		$responses = $this->request->runner->result;						// main request
+		$responses = $this->request->runner->result;					// main request
 		foreach (F::s('RequestManager')->requests as $name => $request)	// all others
 		{
 			if ('__main__' === $name)

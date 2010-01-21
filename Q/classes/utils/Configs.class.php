@@ -1,8 +1,6 @@
 <?php
 class Configs 
 {
-	public $keys;
-	
 	function __set($name, $value) 
 	{
 		$this->$name = $value;

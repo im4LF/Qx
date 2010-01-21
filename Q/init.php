@@ -1,11 +1,33 @@
 <?php 
 define('Q_PATH', realpath(dirname(__FILE__)));
+//define('APP_PATH', realpath('../apps/hello'));
 
 import::configure('q:import.php');						// configure import
 import::from('q:classes/utils/Benchmark.class.php');	// import Q_PATH/utils/Benchmark.class.EXT
 import::from('q:classes/utils/F.class.php');			// import Q_PATH/utils/F.class.EXT - factory class
 import::scan();											// scan defined paths for classes
-import::register(); 									// register autoload
+import::register(); 									// register autoloader
+
+/*$test = array(
+	'views' => array(
+		'*' => 'index'
+	)
+);
+$test2 = array(
+	'views' => array(
+		'*' => 'user/index'
+	)
+);
+
+$config = import::config('app:cache.php');
+
+F::r('Cache:controllers', $config['controllers'])->set('Index', $test);
+F::r('Cache:controllers', $config['controllers'])->set('views:Index', 'index');
+
+F::r('Cache:controllers2', $config['controllers'])->set('User', $test2);
+
+print_r(F::r('Cache:controllers')->get('views:Index'));
+print_r(F::r('Cache:controllers2'));*/
 
 class import
 {
