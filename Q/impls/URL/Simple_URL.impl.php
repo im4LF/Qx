@@ -1,5 +1,5 @@
 <?php 
-class SimpleURL_Impl
+class Simple_URL_Impl
 {
     public $raw_url;
 	public $path;

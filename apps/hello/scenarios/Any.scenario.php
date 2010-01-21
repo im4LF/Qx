@@ -11,7 +11,7 @@ class Any_Scenario
 	
 	function init()
 	{
-		$this->_impls = QF::s('Configs')->impls;
+		$this->_impls = F::s('Configs')->impls;
 		return $this;
 	}
 	

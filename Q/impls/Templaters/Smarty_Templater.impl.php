@@ -1,5 +1,5 @@
 <?php
-class SmartyTemplater_Impl
+class Smarty_Templater_Impl
 {
 	protected $_smarty;
 	protected $_template;

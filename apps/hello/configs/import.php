@@ -4,6 +4,9 @@ return array(
 		'file' => 'app:cache/import.txt',
 		'enabled' => false
 	),
+	'import' => array(
+		'mask' => '/\.php$/'
+	),
 	'scanner' => array(
 		'directories' => array(
 			'shared:types', 

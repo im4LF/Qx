@@ -3,25 +3,28 @@ class App
 {
 	static function run($paths) 
 	{
-		Benchmark::start('app init');
+		Benchmark::start('App::run');
 		
         foreach ($paths as $key=>$path)		// define path's constants for application, shared and others
         {
             define(strtoupper($key).'_PATH', realpath($path));
         }
         
-		import::scan('app:import.php'); 	// set configuration and scan new paths 
+		import::configure('app:import.php');	// set new import configuration	
+		import::scan(); 						// and scan new paths 
 		
 		$config = import::config('app:app.php');	// import application configuration
 		foreach ($config as $key => $value)			// save all configuration sections in configs		
 		{
-			QF::s('Configs')->$key = $value;
+			F::s('Configs')->$key = $value;
 		}
 		
-		Benchmark::stop('app init');
+		Benchmark::stop('App::run');
+		
+		F::s('Cache', $config['impls']['cache'])->load();
 		
 		// create new external request
-		QF::n('Request', 
+		F::n('Request', 
 				'/',							// raw url for request - $_SERVER['REQUEST_URI']
 				array(
 					'name'		=> '__main__',	// main request
@@ -31,6 +34,10 @@ class App
 					'post'		=>& $_POST,
 					'files'		=>& $_FILES
 		))->dispatch();							// run request dispatching
+		
+		F::s('Cache')->save();
+		
+		echo print_r(Benchmark::get(), 1);
 	}
 	
 }

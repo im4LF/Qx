@@ -4,6 +4,9 @@ return array(
 		'file' => 'q:cache/import.txt',
 		'enabled' => false
 	),
+	'import' => array(
+		'mask' => '/\.php$/'
+	),
 	'scanner' => array(
 		'directories' => array(
 			'q:classes', 'q:impls'

@@ -1,13 +1,14 @@
 <?php
-class TwigTemplater_Impl
+class Twig_Templater_Impl
 {
 	protected $_twig;
 	
 	function __construct()
-	{
-		$config = import::config('app:twig-templater.php');
+	{		
+		$config = import::config('app:templaters/twig.php');
 
 		import::from($config['lib']);
+		import::unregister();
 		Twig_Autoloader::register();
 		 
 		$loader = new Twig_Loader_Filesystem(import::buildPath($config['template_dir']));

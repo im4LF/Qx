@@ -3,14 +3,14 @@ class External_Scenario extends Any_Scenario
 {
 	function run()
 	{
-		QF::s('RequestManager')->addRequest($this->request);		// add new Request to RequestManager
+		F::s('RequestManager')->addRequest($this->request);		// add new Request to RequestManager
 		
 		$b_key = 'main request - ['.$this->request->raw_url.']';
 		Benchmark::start($b_key);
 		
-		$this->request->url    = QF::n($this->_impls['url'], $this->request->raw_url)->parse();
-		$this->request->router = QF::n($this->_impls['router'], $this->request)->route();
-		$this->request->runner = QF::n($this->_impls['runner'], $this->request)->run();
+		$this->request->url    = F::n($this->_impls['url'], $this->request->raw_url)->parse();
+		$this->request->router = F::n($this->_impls['router'], $this->request)->route();
+		$this->request->runner = F::n($this->_impls['runner'], $this->request)->run();
 		
 		Benchmark::stop($b_key);
 		
@@ -21,7 +21,7 @@ class External_Scenario extends Any_Scenario
 	{
 		// prepare data for view
 		$responses = $this->request->runner->result;						// main request
-		foreach (QF::s('RequestManager')->requests as $name => $request)	// all others
+		foreach (F::s('RequestManager')->requests as $name => $request)	// all others
 		{
 			if ('__main__' === $name)
 				continue;
@@ -35,7 +35,7 @@ class External_Scenario extends Any_Scenario
 		$controller_name = $this->request->runner->controller_name;
 		$method_name = $this->request->runner->action['method'];
 		
-		$views = QF::s('Configs')->controllers[$controller_name]['views'];
+		$views = F::s('Configs')->controllers[$controller_name]['views'];
 		
 		$found = false;
 		foreach ($views as $mask => $view)
@@ -50,8 +50,8 @@ class External_Scenario extends Any_Scenario
 		if (!$found)
 			$view = $views['*'];
 		
-		echo QF::n($this->_impls[$this->request->url->view.'-view'])	// create viewer
-					->view($responses, $view);							// and make view
+		echo F::n($this->_impls[$this->request->url->view.'-view'])	// create viewer
+					->view($responses, $view);						// and make view
 	}
 }
 ?>

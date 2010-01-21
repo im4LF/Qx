@@ -22,11 +22,11 @@ class Runner_Impl
 		
 		$this->_action_key = $this->request->method.':'.$this->request->url->action.'.'.$this->request->url->view;
 		
-		$this->_parser = QF::n('DocCommentParser');					// init controller configuration parser
+		$this->_parser = F::n('DocCommentParser');					// init controller configuration parser
 		$this->_findControllerAndMethod($this->controller_name);	// find real controller name and method for requested action
 		$this->_parser = null;
 		
-		$controller = QF::n($this->controller_name, $this->request);	// create controller object
+		$controller = F::n($this->controller_name, $this->request);	// create controller object
 		
 		// build method args array
 		$method_args = array();
@@ -34,7 +34,7 @@ class Runner_Impl
 		{
 			foreach ($this->method['params'] as $name => $params)
 			{
-				$method_args[$name] = QF::n($params['type'], $this->request->data($name, $params['from']));
+				$method_args[$name] = F::n($params['type'], $this->request->data($name, $params['from']));
 			}
 		}
 
@@ -117,12 +117,12 @@ class Runner_Impl
 	
 	protected function _findControllerAndMethod($controller_name)
 	{
-		if (!isset(QF::s('Configs')->controllers[$controller_name]))
+		if (!isset(F::s('Configs')->controllers[$controller_name]))
 		{
-			QF::s('Configs')->controllers[$controller_name] = $this->_parser->parse($controller_name);
+			F::s('Configs')->controllers[$controller_name] = $this->_parser->parse($controller_name);
 		}
 		
-		$controller_config = QF::s('Configs')->controllers[$controller_name];
+		$controller_config = F::s('Configs')->controllers[$controller_name];
 		
 		$finded_action = null;
 		foreach ($controller_config['actions'] as $action)

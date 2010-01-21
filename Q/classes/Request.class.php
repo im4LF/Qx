@@ -32,9 +32,9 @@ class Request
 	
 	function dispatch() 
 	{
-		$scenario = QF::s('Configs')->scenarios[$this->scenario];	// get scenario name
+		$scenario = F::s('Configs')->scenarios[$this->scenario];	// get scenario name
 		
-		QF::n($scenario, $this)	// create scenario
+		F::n($scenario, $this)	// create scenario
 			->init()			// init scenario
 			->run()				// run
 			->done();			// and done

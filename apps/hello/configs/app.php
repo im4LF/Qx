@@ -2,12 +2,12 @@
 return array(
 	// implementations
 	'impls' => array(
-		'cache'		=> 'FileCache_Impl',
-		'url'		=> 'SimpleURL_Impl',
-		'router'	=> 'MaskRouter_Impl',
+		'cache'		=> 'File_Cache_Impl',
+		'url'		=> 'Simple_URL_Impl',
+		'router'	=> 'Mask_Router_Impl',
 		'runner'	=> 'Runner_Impl',
-		'html-view'	=> 'TwigTemplater_Impl',
-		'json-view'	=> 'JSONTemplater_Impl'
+		'html-view'	=> 'Twig_Templater_Impl',
+		'json-view'	=> 'JSON_Templater_Impl'
 	),
 	
 	// scenarios for each type of request
