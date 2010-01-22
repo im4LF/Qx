@@ -48,11 +48,20 @@ class User_Controller extends Any_Controller
 	 * @param Email  $email		post [required, valid, exists]
 	 * @param String $password	post [required, min(6) as min]
 	 */
-	function ajaxLogin($email, $password) {}
+	function ajaxLogin(Email $email = '@post [required, valid, exists]', String $password) {}
 	
-	function ajaxLogin__before() {}
+	function ajaxLogin_validate($args, $get, $post, $files) 
+	{
+		$values['email'] = Validator::init(new Email($post['email']))->required()->valid()->exist()->validate();
+		$values['password'] = Validator::init(new String($post['password']))->required()->min(6)->_as('min')->validate();
+		
+		return $values;
+	}
 	
-	function ajaxLogin__validation_error(&$email, &$password) {}
+	function ajaxLogin__validation_error($values) 
+	{
+		
+	}
 	
 	/**
 	 * @action post:login.* [after clearOldLogin loginUser]

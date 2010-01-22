@@ -34,8 +34,6 @@ class Request
 	{
 		$scenario = F::s('Configs')->scenarios[$this->scenario];	// get scenario name
 		
-		echo $scenario;
-		
 		F::n($scenario, $this)	// create scenario
 			->init()			// init scenario
 			->run()				// run

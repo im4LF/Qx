@@ -13,19 +13,19 @@ class App
 		import::configure('app:import.php');	// set new import configuration	
 		import::scan(); 						// and scan new paths 
 		
-		$caches_configs = import::config('app:caches.php');	// caches configuration
-		F::s('Configs')->caches = $caches_configs;			// save configurations
-		foreach ($caches_configs as $key => $config)		// initialize all autoload caches
+		$configs = import::config('app:app.php');		// load all app configuration sections
+		foreach ($configs as $key => $value)
+		{
+			F::s('Configs')->$key = $value;				// save each configuration ыусешщт
+		}
+		
+		foreach ($configs['caches'] as $key => $config)	// initialize all autoload caches
 		{
 			if (!$config['autoload'])	// if cache not autoload
 				continue;
 				
-			echo "Cache:$key\n";
 			F::r('Cache:'.$key, $config)->load();
 		}
-		
-		F::s('Configs')->impls = import::config('app:impls.php');			// impls configuration
-		F::s('Configs')->scenarios = import::config('app:scenarios.php');	// scenarios configuration
 		
 		Benchmark::stop('App::init');
 		
@@ -41,13 +41,13 @@ class App
 					'files'		=>& $_FILES
 		))->dispatch();							// run request dispatching
 		
-		foreach ($caches_configs as $key => $config)	// save all autosave caches
+		/*foreach ($caches_configs as $key => $config)	// save all autosave caches
 		{
 			if (!$config['autosave'])	// if cache not autosave
 				continue;
 				
 			F::r('Cache:'.$key)->save();		
-		}
+		}*/
 		
 		echo print_r(Benchmark::get(), 1);
 	}

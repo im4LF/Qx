@@ -77,7 +77,6 @@ class import
 		self::_cache(self::$_data);
 		
 		Benchmark::stop($b_key);
-		echo 'founded: '.print_r(self::$_data, 1);
 	}
 	
 	private static function _cache($value = null)
