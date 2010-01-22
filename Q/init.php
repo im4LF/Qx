@@ -189,6 +189,11 @@ class import
             self::_importFile($path);
     }
 	
+	static function getClassFile($class_name)
+	{
+		return self::$_data['classes'][$class_name]['path'];
+	} 
+	
 	static function buildPath($path)
 	{
 		list($type, $path) = explode(':', $path);

@@ -41,13 +41,13 @@ class App
 					'files'		=>& $_FILES
 		))->dispatch();							// run request dispatching
 		
-		/*foreach ($caches_configs as $key => $config)	// save all autosave caches
+		foreach ($configs['caches'] as $key => $config)	// save all autosave caches
 		{
 			if (!$config['autosave'])	// if cache not autosave
 				continue;
 				
 			F::r('Cache:'.$key)->save();		
-		}*/
+		}
 		
 		echo print_r(Benchmark::get(), 1);
 	}

@@ -1,7 +1,6 @@
 <?php
 return array(
 	'impls' => array(
-		'cache'		=> 'File_Cache_Impl',
 		'url'		=> 'Simple_URL_Impl',
 		'router'	=> 'Mask_Router_Impl',
 		'runner'	=> 'Runner_Impl',

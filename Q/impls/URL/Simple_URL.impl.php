@@ -10,7 +10,7 @@ class Simple_URL_Impl
     
     function __construct($url)
     {
-        $this->raw_url	= $url;
+        $this->raw_url = $url;
     }
 	
     function parse()
@@ -56,7 +56,6 @@ class Simple_URL_Impl
 	
 	function build()
 	{
-		
 	}
 }
 ?>

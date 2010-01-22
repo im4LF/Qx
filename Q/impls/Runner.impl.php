@@ -6,6 +6,7 @@ class Runner_Impl
 	public $method;
 	public $result;
 	public $controller_name;
+	public $controller_file;
 	
 	protected $_action_key;
 	protected $_parser;
@@ -17,7 +18,8 @@ class Runner_Impl
 	
 	function run()
 	{
-		$this->controller_name =& $this->request->router->controller;
+		$this->controller_name = $this->request->router->controller;
+		$this->controller_file = import::getClassFile($this->controller_name);
 		import::from($this->controller_name);
 		
 		$this->_action_key = $this->request->method.':'.$this->request->url->action.'.'.$this->request->url->view;
@@ -115,11 +117,29 @@ class Runner_Impl
 		return $this;
 	}
 	
+	/**
+	 * 
+	 * @param string $controller_name
+	 * @return 
+	 */
 	protected function _findControllerAndMethod($controller_name)
 	{
 		if (!isset(F::s('Configs')->controllers[$controller_name]))
 		{
-			F::s('Configs')->controllers[$controller_name] = $this->_parser->parse($controller_name);
+			$cache_validation_key = filemtime($this->controller_file);
+			
+			if (null === ($buf = F::r('Cache:controllers')->get($controller_name, $cache_validation_key)->value))
+			{
+				echo "$controller_name: write cache\n";
+				$buf = $this->_parser->parse($controller_name);
+				F::s('Configs')->controllers[$controller_name] = $buf;
+				F::r('Cache:controllers')->set($controller_name, $buf, $cache_validation_key);
+			}
+			else
+			{
+				echo "$controller_name: read cache\n";
+				F::s('Configs')->controllers[$controller_name] = $buf;
+			}
 		}
 		
 		$controller_config = F::s('Configs')->controllers[$controller_name];

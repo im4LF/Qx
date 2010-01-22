@@ -2,7 +2,7 @@
 class Any_Scenario
 {
 	public $request;
-	protected $_impls;
+	public $impls;
 	
 	function __construct(&$request)
 	{
@@ -11,7 +11,7 @@ class Any_Scenario
 	
 	function init()
 	{
-		$this->_impls = F::s('Configs')->impls;
+		$this->impls = F::s('Configs')->impls;
 		return $this;
 	}
 	

@@ -8,9 +8,9 @@ class External_Scenario extends Any_Scenario
 		$b_key = 'main request - ['.$this->request->raw_url.']';
 		Benchmark::start($b_key);
 		
-		$this->request->url    = F::n($this->_impls['url'], $this->request->raw_url)->parse();
-		$this->request->router = F::n($this->_impls['router'], $this->request)->route();
-		$this->request->runner = F::n($this->_impls['runner'], $this->request)->run();
+		$this->request->url    = F::n($this->impls['url'], $this->request->raw_url)->parse();
+		$this->request->router = F::n($this->impls['router'], $this->request)->route();
+		$this->request->runner = F::n($this->impls['runner'], $this->request)->run();
 		
 		Benchmark::stop($b_key);
 		
@@ -50,8 +50,9 @@ class External_Scenario extends Any_Scenario
 		if (!$found)
 			$view = $views['*'];
 		
-		echo F::n($this->_impls[$this->request->url->view.'-view'])	// create viewer
+		/*echo F::n($this->_impls[$this->request->url->view.'-view'])	// create viewer
 					->view($responses, $view);						// and make view
+					*/
 	}
 }
 ?>
