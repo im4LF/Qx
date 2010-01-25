@@ -1,11 +1,11 @@
 <?php
-class Twig_Templater_Impl
+class iTemplater_Twig
 {
 	protected $_twig;
 	
 	function __construct()
 	{		
-		$config = import::config('app:templaters/twig.php');
+		$config = import::config('app:twig.php');
 
 		import::from($config['lib']);
 		import::unregister();

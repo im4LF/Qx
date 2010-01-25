@@ -1,33 +1,22 @@
 <?php
 return array(
+	// implementations
 	'impls' => array(
-		'url'		=> 'Simple_URL_Impl',
-		'router'	=> 'Mask_Router_Impl',
-		'runner'	=> 'Runner_Impl',
-		'html-view'	=> 'Twig_Templater_Impl',
-		'json-view'	=> 'JSON_Templater_Impl'
+		'url'		=> 'iURL_Simple',
+		'router'	=> 'iRouter_Mask',
+		'html-view'	=> 'iTemplater_Twig',
+		'json-view'	=> 'iTemplater_JSON'
 	),
 	
+	// scenarios
 	'scenarios' => array(
-		'external'	=> 'External_Scenario',
-		'internal'	=> 'Internal_Scenario'
+		'external'	=> 'sExternal',
+		'internal'	=> 'sInternal'
 	),
 	
-	'caches' => array(
-		'controllers' => array(
-			'impl' => 'File_Cache_Impl',
-					
-			'autoload' => true,
-			'autosave' => true,
-			
-			'file' => 'app:cache/controllers.txt'
-		),
-		'queries' => array(
-			'impl' => 'Memcache_Cache_Impl',
-					
-			'autoload' => false,
-			'autosave' => false,		
-		)
-	)
+	'db' => array(
+		'dsn' => 'mysql://root:123456@localhost/savanna'
+	),
+
 );
 ?>

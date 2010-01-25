@@ -1,5 +1,5 @@
 <?php 
-class Simple_URL_Impl
+class iURL_Simple
 {
     public $raw_url;
 	public $path;
@@ -42,7 +42,7 @@ class Simple_URL_Impl
         if (preg_match_all($action_state_re, $this->path, $matches, PREG_SET_ORDER))
         {
             $this->action = $matches[0][1];
-            if ($matches[0][3])
+            if (isset($matches[0][3]))
                 $this->state = $matches[0][3];
                 
             $this->path = preg_replace($action_state_re, '', $this->path);
