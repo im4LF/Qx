@@ -4,21 +4,14 @@
  */
 class User_Controller extends Any_Controller
 {
-	public 
-		$__x			= 'index:user/default',
-		$__get_login_x	= 'loginForm:user/login-form',
-		$__post_login_x	= 'ajaxLogin:user/default',
-		$__x_register_x	= '@User_Register_Action';
+	public $__x				= 'index:user/default';
+	public $__login__get_x	= 'loginForm:user/login-form';
+	public $__login__post_x	= 'ajaxLogin:user/default';
 	
-	function __actions()
-	{
-		return array(
-			'*' 				=> 'index:user/default',
-			'get:login.*' 		=> 'loginForm:user/login-form',
-			'post:login.json' 	=> 'ajaxLogin:user/default',
-			'*:register.*' 		=> '@User_Register_Action'
-		);
-	}
+	// $__action_[action_name]_[method]_[viewtype] = '@Some_Other_Controller';
+	// it's mean that [Some_Other_Controller] will handle all relevant actions
+	// in this case all [register] actions will be handled by [User_Register_Action]
+	public $__register__x	= '@User_Register_Action';
 	
 	function index() 
 	{
@@ -28,8 +21,6 @@ class User_Controller extends Any_Controller
 	}
 	
 	function loginForm() {}
-	
-	public $__post_login_json = 'ajaxLogin:x';
 	
 	function ajaxLogin($email, $password) {}
 	

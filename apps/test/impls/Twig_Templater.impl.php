@@ -4,17 +4,17 @@ class Twig_Templater_Impl
 	protected $_twig;
 	
 	function __construct()
-	{		
-		$config = import::config('app:twig.php');
+	{	
+		import::unregister();	
+		$config = import::config('app:configs/twig.php');
 
-		import::from($config['lib']);
-		import::unregister();
+		import::from($config->lib);
 		Twig_Autoloader::register();
 		 
-		$loader = new Twig_Loader_Filesystem(import::buildPath($config['template_dir']));
+		$loader = new Twig_Loader_Filesystem(import::buildPath($config->template_dir));
 		$this->_twig = new Twig_Environment($loader, array(
-			'debug' => $config['debugging'],
-			'cache' => import::buildPath($config['compile_dir']),
+			'debug' => $config->debugging,
+			'cache' => import::buildPath($config->compile_dir),
 		));
 	}
 	

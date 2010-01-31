@@ -10,14 +10,8 @@ return array(
 	
 	// scenarios
 	'scenarios' => array(
-		'external'	=> 'Application_Scenario',
-		'internal'	=> 'Internal_Scenario'
+		'application'	=> 'Application_Scenario',
+		'internal'		=> 'Internal_Scenario'
 	),
-	
-	'db' => array(
-		'dsn' => 'mysql://root:123456@localhost/savanna',
-		//'dsn' => 'driver=mysql&host=localhost&username=root&password=123456&database=savanna&charset=utf8'
-	),
-
 );
 ?>

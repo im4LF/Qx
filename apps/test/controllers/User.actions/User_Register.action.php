@@ -4,13 +4,8 @@
  */
 class User_Register_Action extends Any_Controller
 {
-	function __actions()
-	{
-		return array(
-			'get:register.*'	=> 'getRegistrationFields:user/register',
-			'post:register.*'	=> 'ajaxRegister:user/default'
-		);
-	}
+	public $__register__get_x = 'getRegistrationFields:user/register';
+	public $__register__post_x = 'ajaxRegister:';
 	
 	function getRegistrationFields() {}
 	

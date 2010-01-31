@@ -2,6 +2,7 @@
 $__r = array();	// registry holder
 $__s = array(); // sigleton holder
 
+import::init();
 import::register();
 
 class import
@@ -9,6 +10,11 @@ class import
 	private static $_config;
 	private static $_data;
 	private static $_counter;
+	
+	static function init()
+	{
+		self::$_data['configs'] = array();
+	}
 	
 	static function register()
 	{
@@ -102,10 +108,11 @@ class import
 	/**
 	 * Import class by name or files by mask
 	 * 
-	 * @example import::from('q:classes/utils/F.class.php'); - load files
+	 * @example import::from('app:classes/utils/Some.class.php'); - load file
+	 * @example import::from('app:classes/utils/*'); - load all files
 	 * @example import::from('Request'); - load Request class
 	 * 
-	 * @param object $mask
+	 * @param string $mask
 	 * @return 
 	 */
 	static function from($mask)
@@ -116,24 +123,22 @@ class import
 	/**
 	 * Import configuration
 	 * 
-	 * @example import::config('q:path/to/config.file'); - load from Q_PATH/configs/path/to/config.file
+	 * @example import::config('app:path/to/config.file'); - load from APP_PATH/configs/path/to/config.file
 	 * 
-	 * @param string $path
-	 * @return array
+	 * @param string $path    configuration file path
+	 * @return object         first level keys of configuration array converted in object 
 	 */
 	static function config($path)
 	{
 		$key = $path;
-		
-		if (self::$_data['configs'][$key]['loaded'])
-			return self::$_data['configs'][$key]['data'];
+		if (array_key_exists($key, self::$_data['configs']))
+			return self::$_data['configs'][$key];
 			
 		if (false === ($path = self::buildPath($path)) || !file_exists($path))
 			return;
 		
-		self::$_data['configs'][$key]['loaded'] = true;		
-		self::$_data['configs'][$key]['data'] = (object) require($path);
-		return self::$_data['configs'][$key]['data'];
+		self::$_data['configs'][$key] = (object) require($path);
+		return self::$_data['configs'][$key];
 	}
 	
 	/**
@@ -198,7 +203,7 @@ class import
 	
     private static function _importFile($path)
     {
-    	if (!preg_match(self::$_config['import']['mask'], $path) || isset(self::$_data['files'][$path])) 
+    	if (!preg_match(self::$_config->import['mask'], $path) || isset(self::$_data['files'][$path])) 
 			return;
 
 		require($path);		
@@ -206,6 +211,13 @@ class import
     }
 }
 
+/**
+ * Class factory
+ * 
+ * @example F('SomeClass', $param1, ...)->objectMethod(); - create new instance of SomeClass
+ * 
+ * @return object
+ */
 function F()
 {
 	$args = func_get_args();
@@ -239,6 +251,14 @@ function F()
     return $object;
 }
 
+/**
+ * Singleton amulation
+ * 
+ * @example S('SomeClass', $param1, $param2)->objectMethod(); - create new instance of class SomeClass
+ * @example S('SomeClass')->objectMethod(); - return previously created object
+ * 
+ * @return object 
+ */
 function S()
 {
 	global $__s;
@@ -246,30 +266,27 @@ function S()
 	$args = func_get_args();
     $class_name = $args[0];
 	
-    if (!isset($__s[$class_name]))
+    if (!array_key_exists($class_name, $__s))
         $__s[$class_name] = call_user_func_array('F', $args);
 
     return $__s[$class_name];
 }
 
-/*function R()
-{
-	global $__fsr;
-	
-	$args = func_get_args();
-	$class_key = $args[0];
-	$args[0] = substr($class_key, 0, strpos($class_key, ':'));
-	if (!isset($__fsr[$class_key]))
-        $__fsr[$class_key] = call_user_func_array('F', $args);
-
-    return $__fsr[$class_key];
-}*/
-
+/**
+ * Registry emulation
+ * 
+ * @example R('my-key', new SomeObject)->objectMethod();
+ * @example R('my-key')->objectMethod();
+ * 
+ * @param string $key   registry key for value
+ * @param mixed  $value [optional] value for key
+ * @return mixed        if not defined - current value, previously defined if key already exists 
+ */
 function R($key, $value = null)
 {
 	global $__r;
 	
-	if (!isset($__r[$key]))
+	if (!array_key_exists($key, $__r))
         $__r[$key] = $value;
 
     return $__r[$key];
@@ -282,8 +299,6 @@ class Benchmark
 	static function start($key)
 	{
 		self::$marks[$key]->t0 = microtime(true);
-		
-		return $this; 
 	}
 	
 	static function stop($key)
@@ -316,14 +331,14 @@ class Benchmark
 
 class Request 
 {
-	protected $raw_url;				// requested url
-	protected $method = 'GET';			// request method - default "GET"
-	protected $name;					// scenario name - for identification in responses
+	public $raw_url;				// requested url
+	public $method = 'GET';			// request method - default "GET"
+	public $name;					// scenario name - for identification in responses
 	protected $scenario = 'internal';	// scenario name, default - "internal"
-	protected $cookie;					// $_COOKIE values
-	protected $get;					// $_GET values
-	protected $post;					// $_POST values
-	protected $files;					// $_FILES values
+	public $cookie;					// $_COOKIE values
+	public $get;					// $_GET values
+	public $post;					// $_POST values
+	public $files;					// $_FILES values
 	
 	function __construct($url, $params = array()) 
 	{
@@ -336,54 +351,40 @@ class Request
 		$this->method = strtolower($this->method);
 	}
 	
-	function data($name, $from)
-	{
-		if ('url' === $name)
-			return $this->url->args[$key];
-			
-		return $this->{$from}[$key];
-	}
-	
 	function dispatch() 
 	{
 		$scenarios = import::config('app:configs/app.php')->scenarios;	// get scenario name
-		print_r($scenarios);
-		
-		/*F($config['scenarios'][$this->scenario], $this)	// create scenario
+		F($scenarios[$this->scenario], $this)	// create scenario
 			->open()			// init scenario
 			->run()				// run
-			->close();			// close*/
+			->close();			// close
 	}
 }
 
 class Runner
 {
-	public $request;
+	public $controller;
 	public $method_name;
-	public $view_name;
 	public $result;
 	
-	function __construct(&$request)
+	function __construct(&$controller, $method_name)
 	{
-		$this->request =& $request;
+		$this->controller =& $controller;
+		$this->method_name = $method_name;
 	}
 	
 	function run()
 	{
-		$controller_name = $this->request->router->controller;
-		$action_key = $this->request->method.':'.$this->request->url->action.'.'.$this->request->url->view;
+		$validate_method = $this->method_name.'__validate';
 		
-		$controller = $this->_getController($controller_name, $action_key);
-		
-		$validate_method_name = $this->method_name.'__validate';
-		
-		if (!method_exists($controller, $validate_method_name))
-			$this->result = $controller->{$this->method_name}();
+		if (!method_exists($this->controller, $validate_method))
+			$this->result = $this->controller->{$this->method_name}();
 		else
 		{
+			echo "run $validate_method\n";
 			$validation_success = true;
-			$validation_result = $controller->$validate_method_name();
-			foreach ($controller->$validate_method_name() as $result)
+			$validation_result = $this->controller->$validate_method();
+			foreach ($validation_result as $result)
 			{
 				if ($result->haveErrors())
 					continue;
@@ -392,46 +393,24 @@ class Runner
 				break;
 			}
 			
-			$validation_error_method_name = $this->method_name.'__validation_error';
+			$validation_error_method = $this->method_name.'__validation_error';
 			
-			if (!$validation_success && method_exists($controller, $validation_error_method_name))
-				$this->result = call_user_func_array(array($controller, $validation_error_method_name), array($validation_result));
+			if (!$validation_success && method_exists($this->controller, $validation_error_method))
+			{
+				echo "run $validation_error_method\n";
+				$this->result = call_user_func_array(array($this->controller, $validation_error_method), array($validation_result));
+			}
 			else
 			{
 				$params = array();
 				foreach ($validation_result as $param)
 					$params[] = $param->value();
 					
-				$this->result = call_user_func_array(array($controller, $this->method_name), $params);
+				$this->result = call_user_func_array(array($this->controller, $this->method_name), $params);
 			}
-		}	
-		
-		return $this;
-	}
-	
-	protected function  _getController($controller_name, $action_key)
-	{
-		$controller = F($controller_name, $this->request);
-		$actions = $controller->__actions();
-		
-		foreach ($actions as $mask => $method_view)
-		{
-			$regex = str_replace(':', '\:', $mask);
-			$regex = str_replace('.', '\.', $regex);
-			$regex = '/'.str_replace('*', '[\w\-]+', $regex).'/';
-			
-			if (!preg_match($regex, $action_key)) 
-				continue;
-			
-			$buf = $method_view;
 		}
 		
-		if ('@' === $buf{0})
-			return $this->_getController(substr($buf, 1), $action_key);
-		
-		list($this->method_name, $this->view_name) = explode(':', $buf);
-		
-		return $controller;
+		return $this;
 	}
 }
 

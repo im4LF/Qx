@@ -5,11 +5,7 @@ class Application_Scenario extends Any_Scenario
 	
 	function open()
 	{
-		$config = import::config('app:configs/app.php');
-		$this->impls = $config['impls'];
-		
-		/*import::from('app:libs/dibi/dibi.min.php');
-		dibi::connect($config['db']['dsn']);*/
+		$this->impls = import::config('app:configs/app.php')->impls;
 		return $this;
 	}
 	
@@ -18,27 +14,40 @@ class Application_Scenario extends Any_Scenario
 		$b_key = 'main request - ['.$this->request->raw_url.']';
 		Benchmark::start($b_key);
 		
+		// parse current raw_url and save result to request
 		$this->request->url    = F($this->impls['url'], $this->request->raw_url)->parse();
-		$this->request->args   = $this->request->url->args;  
-		$this->request->router = F($this->impls['router'], $this->request)->route();
-		$this->request->runner = F('Runner', $this->request)->run();
-		echo print_r($this, 1);
-		Benchmark::stop($b_key);
 		
+		// route current url - find controller and method
+		$this->request->router = F($this->impls['router'], $this->request)->route();
+		echo "run: {$this->request->router->controller}::{$this->request->router->method}\n";
+		
+		// create controller object
+		$controller = F($this->request->router->controller, $this->request);
+		
+		// run method of controller object
+		$this->request->runner = F('Runner', $controller, $this->request->router->method)->run();
+				
+		Benchmark::stop($b_key);
 		return $this;
 	}
 	
 	function close()
 	{
+		// get response of query
 		$response = $this->request->runner->result;
-		/*$response['__debug__']['benchmarks'] = Benchmark::get();
 		
-		//echo print_r($response, 1);
+		// get view name
+		$view = $this->request->router->view;		
+		echo "view: {$view}\n";
 		
-		$view_name = $this->request->runner->view_name;
-		$view_impl = $this->impls[$this->request->url->view.'-view'];
+		// save same debug information
+		$response['__debug__']['benchmarks'] = Benchmark::get();
 		
-		echo F::n($view_impl)->view($response, $view_name);	// and make view*/
+		// get view implementation of current viewtype
+		$impl = $this->impls[$this->request->url->view.'-view'];
+		
+		// apply view to response date
+		echo F($impl)->view($response, $view);					
 	}
 }
 ?>
