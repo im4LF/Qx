@@ -7,43 +7,88 @@ class Validator
 	
 	protected $_optional = false;
 	protected $_valid = true;
-	protected $_results = array();
+	protected $_rules = array();
+	protected $_errors = array();
 	
 	function __construct($value)
 	{
 		$this->_value = $value;
 	}
 	
+	/**
+	 * Return scalar value
+	 * 
+	 * @return scalar value 
+	 */
+	function value()
+	{
+		return $this->_value;
+	}
+	
+	/**
+	 * Set pointers for validation
+	 * 
+	 * @param array $pointers
+	 * @return this 
+	 */
 	function pointers(&$pointers)
 	{
 		$this->_pointers =& $pointers;
 		return $this;
 	}
 	
+	/**
+	 * Set object with callbacks functions
+	 * 
+	 * @param object $object
+	 * @return this 
+	 */
 	function callbacks(&$object)
 	{
 		$this->_callbacks =& $object;
 		return $this;
 	}
 	
-	function _as($alias)
+	/**
+	 * Set alias for rule
+	 * 
+	 * @param string $alias
+	 * @return this 
+	 */
+	function alias($alias)
 	{
-		$result = array_pop($this->_results);
-		$this->_results[$alias] = $result;
+		$result = array_pop($this->_rules);
+		$this->_rules[$alias] = $result;
  
 		return $this;
 	}
 	
+	/**
+	 * Is current value valid
+	 * 
+	 * @return bool 
+	 */
 	function valid()
 	{
 		return $this->_valid;
 	}
 	
+	/**
+	 * Return list of errors
+	 * 
+	 * @return array
+	 */
 	function errors()
 	{
 		return $this->_errors;
 	}
 	
+	/**
+	 * Add rule by string, parse and call method
+	 * 
+	 * @param string $rule
+	 * @return this
+	 */
 	function rule($rule)
 	{
 		$alias = $rule;		
@@ -74,11 +119,15 @@ class Validator
 			eval($code);	// build args
 		}
 		
-		$this->_callRule($rule, $args, $alias);
-		 
-		return $this;
+		return $this->_callRule($rule, $args, $alias);
 	}
 	
+	/**
+	 * Add rules by array, each item is one rule
+	 * 
+	 * @param array $rules
+	 * @return this
+	 */
 	function rules($rules)
 	{
 		foreach ($rules as $rule)
@@ -87,25 +136,38 @@ class Validator
 		return $this;
 	}
 	
+	/**
+	 * Call rule witch passed as string
+	 * 
+	 * @param string $rule
+	 * @param array $args
+	 * @param string $alias
+	 * @return this
+	 */
 	protected function _callRule($rule, $args, $alias)
 	{
 		if ('call' === $rule)
 		{
 			$rule = $args[0];
 			$args[0] = $this;
-			$this->_addResult($rule, call_user_method_array($rule, $this->_callbacks, $args));
+			$this->_addValidationResult($rule, call_user_method_array($rule, $this->_callbacks, $args));
 		}
-		else
+		else		
 			call_user_method_array($rule, $this, $args);
-			
-		$this->_as($alias);
+		
+		return $this->alias($alias);
 	} 
 	
-	protected function _addResult($rule, $result)
+	protected function _addValidationResult($rule, $result)
 	{
-		$this->_results[$rule] = $result;
-		if (false === $result)
+		$this->_rules[$rule] = $result;
+		if (false === $result) 
+		{
 			$this->_valid = false;
+			$this->_errors[] = $rule;
+		}
+			
+		return $this;
 	}
 }
 
@@ -121,9 +183,7 @@ class String extends Validator
 	
 	function required() 
 	{
-		$this->_addResult('required', (0 === strlen($this->_value)));
-			
-		return $this;
+		return $this->_addValidationResult('required', (0 !== strlen($this->_value)));
 	}
 	
 	function optional() 
@@ -132,25 +192,32 @@ class String extends Validator
 		return $this;
 	}
 	
+	function eq($value)
+	{
+		if (is_object($value))
+			$value = $value->value();
+		
+		return $this->_addValidationResult('eq', ($this->_value === $value));
+	}
+	
 	function min($length)
 	{
-		return $this;
+		return $this->_addValidationResult('min', strlen($this->_value) >= $length);
 	}
 }
 
-class Email extends Validator
+class Email extends String
 {
-	function valid()
+	function correct()
 	{
 		if ($this->_optional && empty($this->_value))
-			return $this;
+			return $this->_addValidationResult('correct', true);
 		
 		$re = '/^[a-z0-9!#$%&*+-=?^_`{|}~]+(\.[a-z0-9!#$%&*+-=?^_`{|}~]+)*';
     	$re.= '@([-a-z0-9]+\.)+([a-z]{2,3}';
     	$re.= '|info|arpa|aero|coop|name|museum)$/ix';
-    	//return preg_match($re, $this->_value);
-		
-		return $this;
+
+		return $this->_addValidationResult('correct', (bool) preg_match($re, $this->_value));
 	}
 }
 
@@ -158,28 +225,29 @@ class callbacks
 {
 	function check_email_unique(&$value, $tmp)
 	{
-		print_r($tmp);
-		return false;
+		return true;
 	}
 }
 
 $callbacks = new callbacks;
-$pointers = array('confirm_email' => new Email('asd@asd.qwe'), 'tmp' => 'zxc');
+$pointers = array('confirm_email' => new Email('test'), 'tmp' => 'zxc');
 
-$value = new String('test');
+$value = new Email('testtest');
 $value->callbacks($callbacks);
 $value->pointers($pointers);
-$value->rules(array(
+
+/*$value->rules(array(
 	'required',
 	'min(6) as minlen',
+	'correct',
 	'call("check_email_unique", $tmp) as unique',
 	'eq($confirm_email) as eq__confirm_email'
-	));
+	))->valid();*/
 
-if (!$value->required()->min(6)->_as('min')->valid())
+if (!$value->required()->min(6)->alias('min')->correct()->eq('test')->valid())
 	print_r($value->errors());
 	
-print_r($value);	
+//print_r($value);	
 	
 /*
 $res = Validator::init($email, array('confirm_email' => new Email('asd@asd.qwe'), 'tmp' => 'zxc'), $callbacks)
