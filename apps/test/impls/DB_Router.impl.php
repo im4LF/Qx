@@ -1,5 +1,5 @@
 <?php
-class Mask_Router_Impl
+class DB_Router_Impl
 {
 	public $url;
 	public $http_method;
@@ -7,8 +7,9 @@ class Mask_Router_Impl
 	public $controller;
 	public $method;
 	public $view;
+	public $data;
 	
-	function route($url, $http_method) 
+	function route($url, $http_method)
 	{
 		$this->url = $url;
 		$this->http_method = $http_method;
@@ -17,7 +18,7 @@ class Mask_Router_Impl
 		
 		if (false === ($this->_findController()))
 			return false;
-					
+				
 		$this->_findMethodAndView($action_key);
 		
 		return $this;
@@ -25,13 +26,19 @@ class Mask_Router_Impl
 	
 	protected function _findController()
 	{
-		$map = import::config('app:configs/router.php');
-		foreach ($map as $regex => $this->controller) 
-		{			
-			if (preg_match($regex, $this->url->path))
-				return true;
-		}
-		return false;
+		$db = R('db');
+		
+		$q = 'SELECT * FROM `#nodes` WHERE path = ?s';
+		if (!$db->query($q, array($this->url->path))->ok())
+			throw new Exception(print_r($db->error(), 1));
+
+		if (!$db->numRows())
+			return false;
+			
+		$this->data = $db->fetch();
+		$this->controller = $this->data['controller'].'_Controller';
+		
+		return true;
 	}
 	
 	protected function _findMethodAndView($action_key)
@@ -69,8 +76,6 @@ class Mask_Router_Impl
 			if ($no_view)
 				$this->view = $default_view;
 		}
-		
 		return true;
 	}
 }
-?>

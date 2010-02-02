@@ -1,27 +1,31 @@
 <?php 
 class Simple_URL_Impl
 {
-    public $raw_url;
+	protected $_raw_url;
 	public $path;
-	public $action = 'default';
-	public $state  = 'default';
-	public $args   = array();
-	public $view   = 'html';
-    
-    function __construct($url)
-    {
-        $this->raw_url = $url;
-    }
+	public $action;
+	public $state;
+	public $args;
+	public $viewtype;
 	
-    function parse()
+	function __construct()
+	{
+		$this->path = '/';
+		$this->action = $this->state = 'default';
+		$this->args = array();
+		$this->viewtype = 'html';
+	}
+	
+    function parse($raw_url)
     {
-        $buf = parse_url($this->raw_url);
+    	$this->_raw_url = $raw_url;
+        $buf = parse_url($raw_url);
         $this->path = $buf['path'];
         
         // parse view
         if (false !== ($start = strrpos($this->path, '.')))
         {
-            $this->view = substr($this->path, $start + 1);
+            $this->viewtype = substr($this->path, $start + 1);
             $this->path = substr($this->path, 0, $start);
         }
         

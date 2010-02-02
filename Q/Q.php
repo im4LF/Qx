@@ -329,32 +329,40 @@ class Benchmark
 	}
 }
 
+function Request($url, $params)
+{
+	return new Request($url, $params);
+}
+
 class Request 
 {
-	public $raw_url;				// requested url
-	public $method = 'GET';			// request method - default "GET"
-	public $name;					// scenario name - for identification in responses
-	protected $scenario = 'internal';	// scenario name, default - "internal"
-	public $cookie;					// $_COOKIE values
-	public $get;					// $_GET values
-	public $post;					// $_POST values
-	public $files;					// $_FILES values
+	public $raw_url;
+	public $url;
+	public $http_method = 'GET';
+	public $scenario = 'internal';
+	public $cookie;
+	public $get;
+	public $post;
+	public $files;
 	
 	function __construct($url, $params = array()) 
 	{
 		$this->raw_url = $url;
-		$this->name = $this->raw_url;
-		
 		foreach ($params as $name => $value)
 			$this->$name = $value;
 		
-		$this->method = strtolower($this->method);
+		$this->http_method = strtolower($this->http_method);
 	}
 	
 	function dispatch() 
 	{
-		$scenarios = import::config('app:configs/app.php')->scenarios;	// get scenario name
-		F($scenarios[$this->scenario], $this)	// create scenario
+		$scenario_config = import::config('app:configs/app.php')->scenarios[$this->scenario];
+		$scenario_class = $scenario_config['class'];
+		$scenario_impls = $scenario_config['impls'];
+		
+		$this->url = F($scenario_impls['url'])->parse($this->raw_url);
+		
+		F($scenario_class, $this, $scenario_impls)	// create scenario
 			->open()			// init scenario
 			->run()				// run
 			->close();			// close
@@ -364,53 +372,45 @@ class Request
 class Runner
 {
 	public $controller;
-	public $method_name;
 	public $result;
 	
-	function __construct(&$controller, $method_name)
+	function __construct(&$controller)
 	{
 		$this->controller =& $controller;
-		$this->method_name = $method_name;
 	}
 	
-	function run()
+	function run($method_name)
 	{
-		$validate_method = $this->method_name.'__validate';
+		$validate_method = $method_name.'__validate';
 		
 		if (!method_exists($this->controller, $validate_method))
-			$this->result = $this->controller->{$this->method_name}();
-		else
+			return $this->controller->$method_name();
+		
+		echo "run $validate_method\n";
+		$validation_success = true;
+		$validation_result = $this->controller->$validate_method();
+		foreach ($validation_result as $result)
 		{
-			echo "run $validate_method\n";
-			$validation_success = true;
-			$validation_result = $this->controller->$validate_method();
-			foreach ($validation_result as $result)
-			{
-				if ($result->haveErrors())
-					continue;
-					
-				$validation_success = false;
-				break;
-			}
-			
-			$validation_error_method = $this->method_name.'__validation_error';
-			
-			if (!$validation_success && method_exists($this->controller, $validation_error_method))
-			{
-				echo "run $validation_error_method\n";
-				$this->result = call_user_func_array(array($this->controller, $validation_error_method), array($validation_result));
-			}
-			else
-			{
-				$params = array();
-				foreach ($validation_result as $param)
-					$params[] = $param->value();
-					
-				$this->result = call_user_func_array(array($this->controller, $this->method_name), $params);
-			}
+			if ($result->haveErrors())
+				continue;
+				
+			$validation_success = false;
+			break;
 		}
 		
-		return $this;
+		$validation_error_method = $method_name.'__validation_error';
+		
+		if (!$validation_success && method_exists($this->controller, $validation_error_method))
+		{
+			echo "run $validation_error_method\n";
+			return call_user_func_array(array($this->controller, $validation_error_method), array($validation_result));
+		}
+		
+		$params = array();
+		foreach ($validation_result as $param)
+			$params[] = $param->value();
+				
+		return call_user_func_array(array($this->controller, $method_name), $params);
 	}
 }
 

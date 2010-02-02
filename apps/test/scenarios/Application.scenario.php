@@ -1,53 +1,50 @@
 <?php
-class Application_Scenario extends Any_Scenario
+class Application_Scenario
 {
+	public $request;
+	public $response;
+	public $view;
 	public $impls;
+
+	function __construct(&$request, $impls)
+	{
+		$this->request =& $request;
+		$this->impls = $impls;
+	}
 	
 	function open()
 	{
-		$this->impls = import::config('app:configs/app.php')->impls;
 		return $this;
 	}
 	
 	function run()
 	{
-		$b_key = 'main request - ['.$this->request->raw_url.']';
+		$b_key = 'request - ['.$this->request->raw_url.']';
 		Benchmark::start($b_key);
 		
-		// parse current raw_url and save result to request
-		$this->request->url    = F($this->impls['url'], $this->request->raw_url)->parse();
+		$router = F($this->impls['router']);	// create new router implementation
+		if (false === $router->route($this->request->url, $this->request->http_method))
+		{
+			$router->controller = 'Errors';
+			$router->method = 'notFound';
+			$router->view = '404';
+		}
+			
+		$controller = F($router->controller, $this->request);	// create controller object
 		
-		// route current url - find controller and method
-		$this->request->router = F($this->impls['router'], $this->request)->route();
-		echo "run: {$this->request->router->controller}::{$this->request->router->method}\n";
-		
-		// create controller object
-		$controller = F($this->request->router->controller, $this->request);
-		
-		// run method of controller object
-		$this->request->runner = F('Runner', $controller, $this->request->router->method)->run();
-				
+		$this->response = F('Runner', $controller)->run($router->method);	// run method of controller object
+		$this->view = $router->view;
+			
 		Benchmark::stop($b_key);
 		return $this;
 	}
 	
 	function close()
 	{
-		// get response of query
-		$response = $this->request->runner->result;
+		$this->response['__debug__']['benchmarks'] = Benchmark::get();	// save same debug information
 		
-		// get view name
-		$view = $this->request->router->view;		
-		echo "view: {$view}\n";
+		$viewer = $this->impls[$this->request->url->viewtype];	// get view implementation for current viewtype
 		
-		// save same debug information
-		$response['__debug__']['benchmarks'] = Benchmark::get();
-		
-		// get view implementation of current viewtype
-		$impl = $this->impls[$this->request->url->view.'-view'];
-		
-		// apply view to response date
-		echo F($impl)->view($response, $view);					
+		echo F($viewer)->view($this->response, $this->view);	// apply view to response date					
 	}
 }
-?>
