@@ -2,19 +2,11 @@
 class Simple_URL_Impl
 {
 	protected $_raw_url;
-	public $path;
-	public $action;
-	public $state;
-	public $args;
-	public $viewtype;
-	
-	function __construct()
-	{
-		$this->path = '/';
-		$this->action = $this->state = 'default';
-		$this->args = array();
-		$this->viewtype = 'html';
-	}
+	public $path = '/';
+	public $action = 'index';
+	public $state = 'index';
+	public $args = array();
+	public $viewtype = 'html';
 	
     function parse($raw_url)
     {
@@ -38,7 +30,7 @@ class Simple_URL_Impl
             {
                 $this->args[$param[1]] = $param[3];
             }
-            $this->path = preg_replace($params_re, '', $this->path);
+            $this->path = preg_replace($params_re, '/', $this->path);
         }
         
         // try to parse action and state
@@ -49,11 +41,11 @@ class Simple_URL_Impl
             if (isset($matches[0][3]))
                 $this->state = $matches[0][3];
                 
-            $this->path = preg_replace($action_state_re, '', $this->path);
+            $this->path = preg_replace($action_state_re, '/', $this->path);
         }
-        
+
         $this->path = preg_replace('/\/+/', '/', $this->path);
-        $this->path .= $this->path {strlen($this->path) - 1} == '/' ? '' : '/';
+        $this->path .= $this->path{strlen($this->path) - 1} === '/' ? '' : '/';
         
         return $this;
     }
@@ -62,4 +54,3 @@ class Simple_URL_Impl
 	{
 	}
 }
-?>

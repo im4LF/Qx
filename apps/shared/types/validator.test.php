@@ -3,11 +3,11 @@ class Validator
 {
 	protected $_value;
 	protected $_pointers;
-	protected $_callback;	
+	protected $_callbacks;	
 	
 	protected $_optional = false;
 	protected $_valid = true;
-	protected $_errors = array();
+	protected $_results = array();
 	
 	function __construct($value)
 	{
@@ -28,6 +28,9 @@ class Validator
 	
 	function _as($alias)
 	{
+		$result = array_pop($this->_results);
+		$this->_results[$alias] = $result;
+ 
 		return $this;
 	}
 	
@@ -41,17 +44,10 @@ class Validator
 		return $this->_errors;
 	}
 	
-	protected function _error($rule)
-	{
-		$this->_valid = false;
-		$this->_rules[$rule] = true;
-	}
-	
 	function rule($rule)
 	{
-		$alias = $rule;
-		// if rule have alias
-		if (preg_match_all('/(.+?)(\s+as\s+(\w+)|$)/i', $rule, $matches, PREG_SET_ORDER) && isset($matches[0][3]))
+		$alias = $rule;		
+		if (preg_match_all('/(.+?)(\s+as\s+(\w+)|$)/i', $rule, $matches, PREG_SET_ORDER) && isset($matches[0][3]))	// if rule have alias
 		{
 			$rule = $matches[0][1];
 			$alias = $matches[0][3];
@@ -75,20 +71,42 @@ class Validator
 				}
 			}
 			$code .= '$args=array('.$buf.');';
-			// build args
-			eval($code);
+			eval($code);	// build args
 		}
 		
-		echo "$rule AS $alias, args: ".print_r($args, 1);
-		//$this->_addRule($rule, $args, $alias);
+		$this->_callRule($rule, $args, $alias);
 		 
 		return $this;
 	}
 	
-	function callRules($rule, $args, $alias)
+	function rules($rules)
 	{
-		
+		foreach ($rules as $rule)
+			$this->rule($rule);
+		 
+		return $this;
+	}
+	
+	protected function _callRule($rule, $args, $alias)
+	{
+		if ('call' === $rule)
+		{
+			$rule = $args[0];
+			$args[0] = $this;
+			$this->_addResult($rule, call_user_method_array($rule, $this->_callbacks, $args));
+		}
+		else
+			call_user_method_array($rule, $this, $args);
+			
+		$this->_as($alias);
 	} 
+	
+	protected function _addResult($rule, $result)
+	{
+		$this->_results[$rule] = $result;
+		if (false === $result)
+			$this->_valid = false;
+	}
 }
 
 class String extends Validator
@@ -103,8 +121,7 @@ class String extends Validator
 	
 	function required() 
 	{
-		if (0 === strlen($this->_value))
-			$this->_error('required');
+		$this->_addResult('required', (0 === strlen($this->_value)));
 			
 		return $this;
 	}
@@ -137,7 +154,49 @@ class Email extends Validator
 	}
 }
 
+class callbacks
+{
+	function check_email_unique(&$value, $tmp)
+	{
+		print_r($tmp);
+		return false;
+	}
+}
+
+$callbacks = new callbacks;
+$pointers = array('confirm_email' => new Email('asd@asd.qwe'), 'tmp' => 'zxc');
+
 $value = new String('test');
-$value->rule('min(6) as min');
+$value->callbacks($callbacks);
+$value->pointers($pointers);
+$value->rules(array(
+	'required',
+	'min(6) as minlen',
+	'call("check_email_unique", $tmp) as unique',
+	'eq($confirm_email) as eq__confirm_email'
+	));
+
 if (!$value->required()->min(6)->_as('min')->valid())
 	print_r($value->errors());
+	
+print_r($value);	
+	
+/*
+$res = Validator::init($email, array('confirm_email' => new Email('asd@asd.qwe'), 'tmp' => 'zxc'), $callbacks)
+	->rules(array(
+	'required',
+	'min(6) as minlen',
+	'call("check_email_unique", 123) as unique',
+	'eq($confirm_email, $tmp) as eq__confirm_email'
+	))
+->validate();
+	
+echo 'results: '.print_r($res, 1);
+
+$res = Validator::init($email, null, $callbacks)
+	->required()
+	->valid()
+	->min(6)->_as('minlen')
+	->call('check_email_unique', 'test')->_as('unique')
+->validate();
+*/	
