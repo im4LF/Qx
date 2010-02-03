@@ -338,7 +338,7 @@ class Request
 {
 	public $raw_url;
 	public $url;
-	public $http_method = 'GET';
+	public $method = 'GET';
 	public $scenario = 'internal';
 	public $cookie;
 	public $get;
@@ -351,7 +351,7 @@ class Request
 		foreach ($params as $name => $value)
 			$this->$name = $value;
 		
-		$this->http_method = strtolower($this->http_method);
+		$this->method = strtolower($this->method);
 	}
 	
 	function dispatch() 
@@ -391,7 +391,7 @@ class Runner
 		$validation_result = $this->controller->$validate_method();
 		foreach ($validation_result as $result)
 		{
-			if ($result->haveErrors())
+			if ($result->valid())
 				continue;
 				
 			$validation_success = false;
@@ -409,11 +409,13 @@ class Runner
 		$params = array();
 		foreach ($validation_result as $param)
 			$params[] = $param->value();
+		
+		print_r($validation_result);
 				
 		return call_user_func_array(array($this->controller, $method_name), $params);
 	}
 }
-
+/*
 class Validator
 {
 	protected $_value;
@@ -557,5 +559,177 @@ class Validator
 	function haveErrors()
 	{
 		return (bool) count($this->_errors);
+	}
+}*/
+
+class Validator
+{
+	protected $_value;
+	protected $_pointers;
+	protected $_callbacks;	
+	
+	protected $_optional = false;
+	protected $_valid = true;
+	protected $_rules = array();
+	protected $_errors = array();
+	
+	function __construct($value)
+	{
+		$this->_value = $value;
+	}
+	
+	/**
+	 * Return scalar value
+	 * 
+	 * @return scalar value 
+	 */
+	function value()
+	{
+		return $this->_value;
+	}
+	
+	/**
+	 * Set pointers for validation
+	 * 
+	 * @param array $pointers
+	 * @return this 
+	 */
+	function pointers(&$pointers)
+	{
+		$this->_pointers =& $pointers;
+		return $this;
+	}
+	
+	/**
+	 * Set object with callbacks functions
+	 * 
+	 * @param object $object
+	 * @return this 
+	 */
+	function callbacks(&$object)
+	{
+		$this->_callbacks =& $object;
+		return $this;
+	}
+	
+	/**
+	 * Set alias for rule
+	 * 
+	 * @param string $alias
+	 * @return this 
+	 */
+	function alias($alias)
+	{
+		$result = array_pop($this->_rules);
+		$this->_rules[$alias] = $result;
+ 
+		return $this;
+	}
+	
+	/**
+	 * Is current value valid
+	 * 
+	 * @return bool 
+	 */
+	function valid()
+	{
+		return $this->_valid;
+	}
+	
+	/**
+	 * Return list of errors
+	 * 
+	 * @return array
+	 */
+	function errors()
+	{
+		return $this->_errors;
+	}
+	
+	/**
+	 * Add rule by string, parse and call method
+	 * 
+	 * @param string $rule
+	 * @return this
+	 */
+	function rule($rule)
+	{
+		$alias = $rule;		
+		if (preg_match_all('/(.+?)(\s+as\s+(\w+)|$)/i', $rule, $matches, PREG_SET_ORDER) && isset($matches[0][3]))	// if rule have alias
+		{
+			$rule = $matches[0][1];
+			$alias = $matches[0][3];
+		}
+		 
+		$args = array();		
+		if (false !== ($spos = strpos($rule, '(')))	// if rule have arguments
+		{		
+			preg_match_all('/\((.*)\)/', $rule, $matches, PREG_SET_ORDER);	// separate rule name and rule arguments
+			$buf = $matches[0][1];
+			$rule = substr($rule, 0, $spos);
+		 
+			$code = '';			
+			if (preg_match_all('/\$(\w+)/', $buf, $matches, PREG_SET_ORDER))	// if arguments have pointers
+			{
+				foreach ($matches as $match)
+				{
+					$pointer = $match[1];
+					$code .= '$__param_'.$match[1].'=$this->_pointers[\''.$pointer.'\'];';
+					$buf = str_replace($match[1], '__param_'.$match[1], $buf);
+				}
+			}
+			$code .= '$args=array('.$buf.');';
+			eval($code);	// build args
+		}
+		
+		return $this->_callRule($rule, $args, $alias);
+	}
+	
+	/**
+	 * Add rules by array, each item is one rule
+	 * 
+	 * @param array $rules
+	 * @return this
+	 */
+	function rules($rules)
+	{
+		foreach ($rules as $rule)
+			$this->rule($rule);
+		 
+		return $this;
+	}
+	
+	/**
+	 * Call rule witch passed as string
+	 * 
+	 * @param string $rule
+	 * @param array $args
+	 * @param string $alias
+	 * @return this
+	 */
+	protected function _callRule($rule, $args, $alias)
+	{
+		if ('call' === $rule)
+		{
+			$rule = $args[0];
+			$args[0] = $this;
+			$this->_addValidationResult($rule, call_user_method_array($rule, $this->_callbacks, $args));
+		}
+		else		
+			call_user_method_array($rule, $this, $args);
+		
+		return $this->alias($alias);
+	} 
+	
+	protected function _addValidationResult($rule, $result)
+	{
+		$this->_rules[$rule] = $result;
+		if (false === $result) 
+		{
+			$this->_valid = false;
+			$this->_errors[] = $rule;
+		}
+			
+		return $this;
 	}
 }
