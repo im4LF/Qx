@@ -4,11 +4,11 @@
  */
 class User_Controller extends Any_Controller
 {
-	public $__x				= 'index:user/default';
-	public $__login__get_x	= 'loginForm:user/login-form';
-	public $__login__post_x	= 'ajaxLogin:user/default';
+	public $__x				= 'method: index; view: user/default';
+	public $__login__get_x	= 'method: loginForm; view: user/login-form';
+	public $__login__post_x	= 'method: ajaxLogin; view: user/default';
 	
-	// $__action_[action_name]_[method]_[viewtype] = '@Some_Other_Controller';
+	// $__[action_name]__[method]_[viewtype] = '@Some_Other_Controller';
 	// it's mean that [Some_Other_Controller] will handle all relevant actions
 	// in this case all [register] actions will be handled by [User_Register_Action]
 	public $__register__x	= '@User_Register_Action';

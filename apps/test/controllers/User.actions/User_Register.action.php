@@ -4,8 +4,14 @@
  */
 class User_Register_Action extends Any_Controller
 {
-	public $__register__get_x = 'getRegistrationFields:user/register';
-	public $__register__post_x = 'ajaxRegister:';
+	public $__register__get_x = 'method: getRegistrationFields; view: user/register';
+	// also in action configuration u may defined other params
+	// validation: on strict - mean enable validatoin and switch to strict mode
+	// strict validation mode mean call __validation_error if validation not success
+	public $__register__post_x = 'method: ajaxRegister; validation: on strict';
+	
+	// soft validation mode mean call controller method and pass
+	// public $__register__post_x = 'method: ajaxRegister; validation: on soft; pass-args: as-array';
 	
 	function getRegistrationFields() {}
 	
