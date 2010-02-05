@@ -23,7 +23,7 @@ class Application_Scenario
 		Benchmark::start($b_key);
 		
 		$router = F($this->impls['router']);	// create new router implementation
-		if (false === $router->route($this->request->url, $this->request->http_method))
+		if (false === $router->route($this->request->url, $this->request->method))
 		{
 			$router->controller = 'Errors';
 			$router->method = 'notFound';

@@ -12,12 +12,20 @@ class Index_Controller extends Any_Controller
 	
 	// define just method name, mean that view name gets from $__x, 
 	// also define just view name mean that method name well gets from $__x
-	public $__x = 'method: index; view: index';
+	public $__x = 'method: index; view: index; validation: on strict';
+	public $__test__x = 'method: testMethod';
 	
 	function index() 
 	{
 		return array(
 			'title' => 'Index_Controller::index'
+		);
+	}
+	
+	function testMethod() 
+	{
+		return array(
+			'title' => 'Index_Controller::testMethod'
 		);
 	}
 }
