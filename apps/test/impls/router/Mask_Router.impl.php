@@ -6,7 +6,6 @@ class Mask_Router_Impl
 	
 	public $controller;
 	public $method;
-	public $method_config;
 	public $view;
 	
 	function route($url, $http_method) 
@@ -58,27 +57,20 @@ class Mask_Router_Impl
 			return $this->_findMethodAndView($action_key);
 		}
 		
-		$buf = $this->_parseActionConfig($buf);
-		
-		$this->method_config = $buf;
-		$this->method = $buf['method'];
-		$this->view = $buf['view'];
+		list($this->method, $this->view) = explode(':', $buf);
 		
 		$no_method = empty($this->method);
 		$no_view = empty($this->view);
 		if ($no_method || $no_view)
 		{
-			$buf = $this->_parseActionConfig($default);
-			$this->method_config = $buf;
+			list($default_method, $default_view) = explode(':', $default);
 			
 			if ($no_method)
-				$this->method = $buf['method'];
+				$this->method = $default_method;
 				
 			if ($no_view)
-				$this->view = $buf['view'];
+				$this->view = $default_view;
 		}
-		
-		print_r($this);
 		
 		return true;
 	}
@@ -89,11 +81,14 @@ class Mask_Router_Impl
 		foreach ($params as $param)
 		{
 			$param = trim($param);
+			if (empty($param))
+				continue;
+				
 			list($key, $values) = explode(':', $param);
 			$key = trim($key);
 			$values = trim($values);
 			
-			if (false !== strpos($values, ' '))
+			//if (false !== strpos($values, ' '))
 			{
 				$values = array_fill_keys(explode(' ', $values), true);
 			}

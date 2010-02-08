@@ -4,9 +4,9 @@
  */
 class User_Controller extends Any_Controller
 {
-	public $__x				= 'method: index; view: user/default';
-	public $__login__get_x	= 'method: loginForm; view: user/login-form';
-	public $__login__post_x	= 'method: ajaxLogin; view: user/default';
+	public $__x				= ':user/default';
+	public $__login__get_x	= 'loginForm:user/login-form';
+	public $__login__post_x	= 'ajaxLogin:user/default';
 	
 	// $__[action_name]__[method]_[viewtype] = '@Some_Other_Controller';
 	// it's mean that [Some_Other_Controller] will handle all relevant actions

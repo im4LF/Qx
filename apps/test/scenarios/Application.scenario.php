@@ -32,7 +32,8 @@ class Application_Scenario
 			
 		$controller = F($router->controller, $this->request);	// create controller object
 		
-		$this->response = F('Runner', $controller)->run($router->method);	// run method of controller object
+		$this->response = F('Runner', $controller)->run($router->method); // create new runner and run method of controller object
+			
 		$this->view = $router->view;
 			
 		Benchmark::stop($b_key);

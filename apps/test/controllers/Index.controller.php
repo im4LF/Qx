@@ -1,7 +1,7 @@
 <?php
 class Index_Controller extends Any_Controller
 {
-	// $__[action name]__[method]_[viewtype] = 'method: [method name]; view: [view name]'
+	// $__[action name]__[method]_[viewtype] = '[method name]:[view name]'
 	// action name - action name
 	// method      - request method - GET or POST in lowercase
 	// viewtype    - request viewtype
@@ -12,8 +12,8 @@ class Index_Controller extends Any_Controller
 	
 	// define just method name, mean that view name gets from $__x, 
 	// also define just view name mean that method name well gets from $__x
-	public $__x = 'method: index; view: index; validation: on strict';
-	public $__test__x = 'method: testMethod';
+	public $__x = ':index';
+	public $__test__x = 'testMethod:index';
 	
 	function index() 
 	{
@@ -22,10 +22,31 @@ class Index_Controller extends Any_Controller
 		);
 	}
 	
-	function testMethod() 
+	function testMethod($email, $password) 
 	{
+		$args = func_get_args();
+		echo 'args: '.print_r($args, 1);
+		
 		return array(
 			'title' => 'Index_Controller::testMethod'
+		);
+	}
+	
+	function testMethod__validate()
+	{
+		$email = new Email('test@test.ru');
+		$password = new String('123456');
+		return array(
+			'email' => $email->correct(),
+			'password' => $password->min(6)
+		);
+	}
+	
+	function testMethod__validation_error($errors)
+	{
+		echo 'errors: '.print_r($errors, 1)."\n";
+		return array(
+			'title' => 'Index_Controller::testMethod__validation_error'
 		);
 	}
 }

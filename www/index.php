@@ -1,4 +1,6 @@
 <?php
+error_reporting(E_ALL);
+
 $t0 = microtime(true);
 
 define('APP_PATH', realpath('../apps/test'));		// define app path constants

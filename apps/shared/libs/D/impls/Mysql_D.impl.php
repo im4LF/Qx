@@ -130,7 +130,7 @@ class Mysql_D_Impl extends D
 	
 	function query($sql, $values)
 	{
-		if (false === ($sql = $this->_buildQuery($sql, $values)))
+		if (false === ($sql = $this->buildQuery($sql, $values)))
 			return $this->_setError();
 			
 		$this->_action = 'execute query: '.$sql;
@@ -140,7 +140,7 @@ class Mysql_D_Impl extends D
 		return $this;
 	}
 	
-	protected function _buildQuery($sql, $values)
+	public function buildQuery($sql, $values)
 	{
 		if (false !== strpos($sql, '#'))	// replace # by table prefix
 		{
@@ -174,7 +174,8 @@ class Mysql_D_Impl extends D
 				if (!preg_match('/^(\w+)/', $buf[$i], $matches))
 					continue;
 					
-				$buf[$i] = $this->_formatValue($values[$i-1], $matches[1]).substr($buf[$i], strlen($matches[1]));
+				//$buf[$i] = $this->_formatValue($values[$i-1], $matches[1]).substr($buf[$i], strlen($matches[1]));
+				$buf[$i] = $this->_formatValue(array_shift($values), $matches[1]).substr($buf[$i], strlen($matches[1]));
 			}
 			$sql = implode('', $buf);
 		}

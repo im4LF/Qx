@@ -135,7 +135,7 @@ class import
 			return self::$_data['configs'][$key];
 			
 		if (false === ($path = self::buildPath($path)) || !file_exists($path))
-			return;
+			return false;
 		
 		self::$_data['configs'][$key] = (object) require($path);
 		return self::$_data['configs'][$key];
@@ -383,13 +383,13 @@ class Runner
 	{
 		$validate_method = $method_name.'__validate';
 		
-		if (!method_exists($this->controller, $validate_method))
-			return $this->controller->$method_name();
-		
+		if (!method_exists($this->controller, $validate_method))	// if validation not enabled
+			return $this->controller->$method_name();				// run controller method
+
 		echo "run $validate_method\n";
 		$validation_success = true;
-		$validation_result = $this->controller->$validate_method();
-		foreach ($validation_result as $result)
+		$validation_result = $this->controller->$validate_method();	// run validation method
+		foreach ($validation_result as $result)	// check all values on error
 		{
 			if ($result->valid())
 				continue;
@@ -399,8 +399,9 @@ class Runner
 		}
 		
 		$validation_error_method = $method_name.'__validation_error';
+		echo 'validation_result: '.print_r($validation_result, 1);
 		
-		if (!$validation_success && method_exists($this->controller, $validation_error_method))
+		if (!$validation_success && method_exists($this->controller, $validation_error_method))	// if validation not success and validation error method exist
 		{
 			echo "run $validation_error_method\n";
 			return call_user_func_array(array($this->controller, $validation_error_method), array($validation_result));
@@ -410,7 +411,7 @@ class Runner
 		foreach ($validation_result as $param)
 			$params[] = $param->value();
 		
-		print_r($validation_result);
+		//print_r($validation_result);
 				
 		return call_user_func_array(array($this->controller, $method_name), $params);
 	}

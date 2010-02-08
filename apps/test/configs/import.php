@@ -9,10 +9,10 @@ return array(
 	),
 	'scanner' => array(
 		'directories' => array(
-			'shared:types', 
+			'shared:validators', 
 			'app:impls', 'app:controllers', 'app:scenarios'
 		),
-		'filenames'	=> '/\.(class|controller|action|type|impl|scenario)\.php$/',
+		'filenames'	=> '/\.(class|controller|action|validator|impl|scenario)\.php$/',
 	)
 );
 ?>
