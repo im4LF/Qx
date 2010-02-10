@@ -1,4 +1,8 @@
 <?php
+$a = array('a'=>'1');
+print_r(array_pop($a));
+
+exit;
 error_reporting(E_ALL);
 
 $t0 = microtime(true);

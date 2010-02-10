@@ -388,12 +388,12 @@ class Runner
 
 		echo "run $validate_method\n";
 		$validation_success = true;
-		$validation_result = $this->controller->$validate_method();	// run validation method
+		$validation_result = (array) $this->controller->$validate_method();	// run validation method
 		foreach ($validation_result as $result)	// check all values on error
 		{
 			if ($result->valid())
 				continue;
-				
+			
 			$validation_success = false;
 			break;
 		}
@@ -407,13 +407,13 @@ class Runner
 			return call_user_func_array(array($this->controller, $validation_error_method), array($validation_result));
 		}
 		
-		$params = array();
+		/*$params = array();
 		foreach ($validation_result as $param)
-			$params[] = $param->value();
+			$params[] = $param->value();*/
 		
 		//print_r($validation_result);
 				
-		return call_user_func_array(array($this->controller, $method_name), $params);
+		return call_user_func_array(array($this->controller, $method_name), $validation_result);
 	}
 }
 /*
@@ -572,7 +572,6 @@ class Validator
 	protected $_optional = false;
 	protected $_valid = true;
 	protected $_rules = array();
-	protected $_errors = array();
 	
 	function __construct($value)
 	{
@@ -644,7 +643,16 @@ class Validator
 	 */
 	function errors()
 	{
-		return $this->_errors;
+		$errors = array();
+		foreach ($this->_rules as $name => $result)
+		{
+			if ($result) 
+				continue;
+			
+			$errors[] = $name;
+		}
+		
+		return $errors;
 	}
 	
 	/**
@@ -701,7 +709,7 @@ class Validator
 	}
 	
 	/**
-	 * Call rule witch passed as string
+	 * Call rule wich passed as string
 	 * 
 	 * @param string $rule
 	 * @param array $args
@@ -726,10 +734,7 @@ class Validator
 	{
 		$this->_rules[$rule] = $result;
 		if (false === $result) 
-		{
 			$this->_valid = false;
-			$this->_errors[] = $rule;
-		}
 			
 		return $this;
 	}
