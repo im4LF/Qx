@@ -25,7 +25,7 @@ class Mask_Router_Impl
 	
 	protected function _findController()
 	{
-		$map = import::config('app:configs/router.php');
+		$map = import::config('app:configs/router.yml');
 		foreach ($map as $regex => $this->controller) 
 		{			
 			if (preg_match($regex, $this->url->path))

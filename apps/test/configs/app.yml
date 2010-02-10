@@ -1,0 +1,8 @@
+scenarios:
+    application:
+    	class: Application_Scenario
+    	impls:
+    		url: Simple_URL_Impl
+    		router: Mask_Router_Impl
+    		html: Smarty_Templater_Impl
+    		json: JSON_Templater_Impl

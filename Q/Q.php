@@ -1,7 +1,10 @@
 <?php
+define('Q_PATH', realpath(dirname(__FILE__)));
+
 $__r = array();	// registry holder
 $__s = array(); // sigleton holder
 
+import::from('q:libs/spyc.php');
 import::init();
 import::register();
 
@@ -131,13 +134,20 @@ class import
 	static function config($path)
 	{
 		$key = $path;
+		$b_key = 'import::config ['.$key.']';
+		Benchmark::start($b_key);
+		
 		if (array_key_exists($key, self::$_data['configs']))
+		{
+			Benchmark::stop($b_key);
 			return self::$_data['configs'][$key];
+		}
 			
 		if (false === ($path = self::buildPath($path)) || !file_exists($path))
 			return false;
 		
-		self::$_data['configs'][$key] = (object) require($path);
+		self::$_data['configs'][$key] = (object) spyc_load_file($path);
+		Benchmark::stop($b_key);
 		return self::$_data['configs'][$key];
 	}
 	
@@ -203,7 +213,8 @@ class import
 	
     private static function _importFile($path)
     {
-    	if (!preg_match(self::$_config->import['mask'], $path) || isset(self::$_data['files'][$path])) 
+    	//if (!preg_match(self::$_config->import['mask'], $path) || isset(self::$_data['files'][$path])) 
+		if (!preg_match('/\.php$/', $path) || isset(self::$_data['files'][$path]))
 			return;
 
 		require($path);		
@@ -356,7 +367,7 @@ class Request
 	
 	function dispatch() 
 	{
-		$scenario_config = import::config('app:configs/app.php')->scenarios[$this->scenario];
+		$scenario_config = import::config('app:configs/app.yml')->scenarios[$this->scenario];
 		$scenario_class = $scenario_config['class'];
 		$scenario_impls = $scenario_config['impls'];
 		
