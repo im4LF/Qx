@@ -5,7 +5,7 @@ class Smarty_Templater_Impl
     
     function __construct()
     {
-        $config = import::config('app:configs/smarty.yml');
+        $config = import::config('app:configs/smarty.php');
         import::from($config->lib);
 		
         $this->_smarty = new Smarty;

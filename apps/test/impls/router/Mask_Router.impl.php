@@ -25,7 +25,7 @@ class Mask_Router_Impl
 	
 	protected function _findController()
 	{
-		$map = import::config('app:configs/router.yml');
+		$map = import::config('app:configs/router.php');
 		foreach ($map as $regex => $this->controller) 
 		{			
 			if (preg_match($regex, $this->url->path))
@@ -37,39 +37,48 @@ class Mask_Router_Impl
 	protected function _findMethodAndView($action_key)
 	{
 		$actions = get_class_vars($this->controller);
-		
 		$default = $buf = $actions['__x'];
 		foreach ($actions as $action => $method_view)
 		{
 			if (0 !== strpos($action, '__') || '__x' === $action)
 				continue;
-				
+			
 			if (!preg_match('/'.str_replace('x', '[a-z0-9]+', $action).'/', $action_key)) 
 				continue;
-			
+
 			$buf = $method_view;
 			break;
 		}
-		
+
 		if ('@' === $buf{0})
 		{
 			$this->controller = substr($buf, 1);
 			return $this->_findMethodAndView($action_key);
 		}
 		
-		list($this->method, $this->view) = explode(':', $buf);
+		@list($this->method, $this->view, $params) = explode(':', $buf);
 		
 		$no_method = empty($this->method);
 		$no_view = empty($this->view);
-		if ($no_method || $no_view)
+		$no_params = empty($params);
+		if ($no_method || $no_view || $no_params)
 		{
-			list($default_method, $default_view) = explode(':', $default);
-			
+			@list($default_method, $default_view, $default_params) = explode(':', $default);
 			if ($no_method)
 				$this->method = $default_method;
 				
 			if ($no_view)
 				$this->view = $default_view;
+				
+			if ($no_params)
+				$no_view = $default_params;
+		}
+		
+		$params = explode(',', trim($params));
+		foreach ($params as $param)
+		{
+			@list($key, $value) = explode('=', trim($param));
+			$this->params[$key] = array_fill_keys(explode(' ', $value), true);
 		}
 		
 		return true;

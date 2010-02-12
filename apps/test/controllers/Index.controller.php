@@ -13,7 +13,7 @@ class Index_Controller extends Any_Controller
 	// define just method name, mean that view name gets from $__x, 
 	// also define just view name mean that method name well gets from $__x
 	public $__x = ':index';
-	public $__test__x = 'testMethod:index';
+	public $__test__x = 'testMethod:index:validation=on soft, pass-args=array';
 	
 	function index() 
 	{
@@ -26,6 +26,7 @@ class Index_Controller extends Any_Controller
 	{
 		$args = func_get_args();
 		echo 'args: '.print_r($args, 1);
+		echo 'email: '.print_r($email, 1);
 		
 		return array(
 			'title' => 'Index_Controller::testMethod'
@@ -38,7 +39,7 @@ class Index_Controller extends Any_Controller
 		$password = new String('123456');
 		return array(
 			'email' => $email->correct(),
-			'password' => $password->min(6)
+			'password' => $password->min(16)
 		);
 	}
 	

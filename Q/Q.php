@@ -1,10 +1,7 @@
 <?php
-define('Q_PATH', realpath(dirname(__FILE__)));
-
 $__r = array();	// registry holder
 $__s = array(); // sigleton holder
 
-import::from('q:libs/spyc.php');
 import::init();
 import::register();
 
@@ -134,20 +131,13 @@ class import
 	static function config($path)
 	{
 		$key = $path;
-		$b_key = 'import::config ['.$key.']';
-		Benchmark::start($b_key);
-		
 		if (array_key_exists($key, self::$_data['configs']))
-		{
-			Benchmark::stop($b_key);
 			return self::$_data['configs'][$key];
-		}
 			
 		if (false === ($path = self::buildPath($path)) || !file_exists($path))
 			return false;
 		
-		self::$_data['configs'][$key] = (object) spyc_load_file($path);
-		Benchmark::stop($b_key);
+		self::$_data['configs'][$key] = (object) require($path);
 		return self::$_data['configs'][$key];
 	}
 	
@@ -213,8 +203,7 @@ class import
 	
     private static function _importFile($path)
     {
-    	//if (!preg_match(self::$_config->import['mask'], $path) || isset(self::$_data['files'][$path])) 
-		if (!preg_match('/\.php$/', $path) || isset(self::$_data['files'][$path]))
+    	if (!preg_match(self::$_config->import['mask'], $path) || isset(self::$_data['files'][$path])) 
 			return;
 
 		require($path);		
@@ -367,7 +356,7 @@ class Request
 	
 	function dispatch() 
 	{
-		$scenario_config = import::config('app:configs/app.yml')->scenarios[$this->scenario];
+		$scenario_config = import::config('app:configs/app.php')->scenarios[$this->scenario];
 		$scenario_class = $scenario_config['class'];
 		$scenario_impls = $scenario_config['impls'];
 		
@@ -390,11 +379,11 @@ class Runner
 		$this->controller =& $controller;
 	}
 	
-	function run($method_name)
+	function run($method_name, $params)
 	{
 		$validate_method = $method_name.'__validate';
-		
-		if (!method_exists($this->controller, $validate_method))	// if validation not enabled
+		//if (!method_exists($this->controller, $validate_method))	// if validation not enabled
+		if (!isset($params['validation']['on']))	// if validation not enabled
 			return $this->controller->$method_name();				// run controller method
 
 		echo "run $validate_method\n";
@@ -412,17 +401,14 @@ class Runner
 		$validation_error_method = $method_name.'__validation_error';
 		echo 'validation_result: '.print_r($validation_result, 1);
 		
-		if (!$validation_success && method_exists($this->controller, $validation_error_method))	// if validation not success and validation error method exist
+		if (!$validation_success && !isset($params['validation']['soft']))	// if validation not success and validation mode not soft
 		{
 			echo "run $validation_error_method\n";
 			return call_user_func_array(array($this->controller, $validation_error_method), array($validation_result));
 		}
 		
-		/*$params = array();
-		foreach ($validation_result as $param)
-			$params[] = $param->value();*/
-		
-		//print_r($validation_result);
+		if (isset($params['pass-args']['array']))
+			$validation_result = array($validation_result);
 				
 		return call_user_func_array(array($this->controller, $method_name), $validation_result);
 	}

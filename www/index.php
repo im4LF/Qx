@@ -7,7 +7,7 @@ define('APP_PATH', realpath('../apps/test'));		// define app path constants
 define('SHARED_PATH', realpath('../apps/shared'));	// shared path constant
 require '../Q/Q.php';								// require Q
 
-import::scan('app:configs/import.yml');	// scan defined paths in import configuration
+import::scan('app:configs/import.php');	// scan defined paths in import configuration
 
 Request('/.test.html', // request URI
 	array(		
