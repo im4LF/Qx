@@ -383,7 +383,7 @@ class Runner
 	{
 		$validate_method = $method_name.'__validate';
 		//if (!method_exists($this->controller, $validate_method))	// if validation not enabled
-		if (!isset($params['validation']['on']))	// if validation not enabled
+		if ('on' !== @$params['x'])	// if validation not enabled
 			return $this->controller->$method_name();				// run controller method
 
 		echo "run $validate_method\n";
@@ -401,16 +401,24 @@ class Runner
 		$validation_error_method = $method_name.'__validation_error';
 		echo 'validation_result: '.print_r($validation_result, 1);
 		
-		if (!$validation_success && !isset($params['validation']['soft']))	// if validation not success and validation mode not soft
+		if (!$validation_success && 'sort' !== @$params['xm'])	// if validation not success and validation mode not soft
 		{
 			echo "run $validation_error_method\n";
 			return call_user_func_array(array($this->controller, $validation_error_method), array($validation_result));
 		}
 		
-		if (isset($params['pass-args']['array']))
+		if ('array' === @$params['a'])
 			$validation_result = array($validation_result);
 				
-		return call_user_func_array(array($this->controller, $method_name), $validation_result);
+		if ('on' === @$params['<'])
+			call_user_func_array(array($this->controller, $method_name.'__before'), $validation_result);
+		
+		$result = call_user_func_array(array($this->controller, $method_name), $validation_result);
+		
+		if ('on' === @$params['>'])
+			call_user_func_array(array($this->controller, $method_name.'__after'), $validation_result);
+			
+		return $result;
 	}
 }
 /*

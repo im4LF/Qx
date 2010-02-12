@@ -7,6 +7,7 @@ class Mask_Router_Impl
 	public $controller;
 	public $method;
 	public $view;
+	public $params;
 	
 	function route($url, $http_method) 
 	{
@@ -38,7 +39,7 @@ class Mask_Router_Impl
 	{
 		$actions = get_class_vars($this->controller);
 		$default = $buf = $actions['__x'];
-		foreach ($actions as $action => $method_view)
+		foreach ($actions as $action => $config)
 		{
 			if (0 !== strpos($action, '__') || '__x' === $action)
 				continue;
@@ -46,7 +47,7 @@ class Mask_Router_Impl
 			if (!preg_match('/'.str_replace('x', '[a-z0-9]+', $action).'/', $action_key)) 
 				continue;
 
-			$buf = $method_view;
+			$buf = $config;
 			break;
 		}
 
@@ -56,52 +57,23 @@ class Mask_Router_Impl
 			return $this->_findMethodAndView($action_key);
 		}
 		
-		@list($this->method, $this->view, $params) = explode(':', $buf);
-		
-		$no_method = empty($this->method);
-		$no_view = empty($this->view);
-		$no_params = empty($params);
-		if ($no_method || $no_view || $no_params)
-		{
-			@list($default_method, $default_view, $default_params) = explode(':', $default);
-			if ($no_method)
-				$this->method = $default_method;
-				
-			if ($no_view)
-				$this->view = $default_view;
-				
-			if ($no_params)
-				$no_view = $default_params;
-		}
-		
-		$params = explode(',', trim($params));
-		foreach ($params as $param)
-		{
-			@list($key, $value) = explode('=', trim($param));
-			$this->params[$key] = array_fill_keys(explode(' ', $value), true);
-		}
+		$this->params = array_merge($this->_parseMethodConfig($default), $this->_parseMethodConfig($buf));
+		$this->method = $this->params['m'];
+		$this->view = $this->params['v'];
 		
 		return true;
 	}
 	
-	protected function _parseActionConfig($string)
+	protected function _parseMethodConfig($config)
 	{
-		$params = explode(';', $string);
+		$params = explode(',', $config);
+		$config = array();
 		foreach ($params as $param)
 		{
 			$param = trim($param);
-			if (empty($param))
-				continue;
 				
-			list($key, $values) = explode(':', $param);
-			$key = trim($key);
-			$values = trim($values);
-			
-			//if (false !== strpos($values, ' '))
-			{
-				$values = array_fill_keys(explode(' ', $values), true);
-			}
-			$config[$key] = $values;
+			list($name, $value) = explode(':', $param);
+			$config[trim($name)] = trim($value);
 		}
 		
 		return $config;
