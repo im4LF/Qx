@@ -379,18 +379,27 @@ class Runner
 		$this->controller =& $controller;
 	}
 	
-	function run($method_name, $params)
+	function run($method_name)
 	{
-		$validate_method = $method_name.'__validate';
-		//if (!method_exists($this->controller, $validate_method))	// if validation not enabled
-		if ('on' !== @$params['x'])	// if validation not enabled
+		$validation_method = $method_name.'__validate';
+		//if ('on' !== @$params['x'])	// if validation not enabled
+		if (!method_exists($this->controller, $validation_method))	// if validation not enabled
 			return $this->controller->$method_name();				// run controller method
 
-		echo "run $validate_method\n";
+		echo "run $validation_method\n";
 		$validation_success = true;
-		$validation_result = (array) $this->controller->$validate_method();	// run validation method
-		foreach ($validation_result as $result)	// check all values on error
+		$validation_result = (array) $this->controller->$validation_method();	// run validation method
+		
+		$config = array();
+		foreach ($validation_result as $name => $result)	// check all values on error
 		{
+			if ('__config__' === $name)
+			{
+				$config = $this->_parseConfig($result);
+				unset($validation_result[$name]);
+				continue;
+			}
+			
 			if ($result->valid())
 				continue;
 			
@@ -398,27 +407,47 @@ class Runner
 			break;
 		}
 		
+		echo 'config: '.print_r($config, 1);
+		
 		$validation_error_method = $method_name.'__validation_error';
 		echo 'validation_result: '.print_r($validation_result, 1);
 		
-		if (!$validation_success && 'sort' !== @$params['xm'])	// if validation not success and validation mode not soft
+		//if (!$validation_success && 'sort' !== @$params['xm'])	// if validation not success and validation mode not soft
+		if (!$validation_success && method_exists($this->controller, $validation_error_method))	// if validation not success and __validation_error exist
 		{
 			echo "run $validation_error_method\n";
 			return call_user_func_array(array($this->controller, $validation_error_method), array($validation_result));
 		}
 		
-		if ('array' === @$params['a'])
+		if ('array' === $config['args'])
 			$validation_result = array($validation_result);
-				
-		if ('on' === @$params['<'])
-			call_user_func_array(array($this->controller, $method_name.'__before'), $validation_result);
+			
+		$before_method = $method_name.'__before';
+		if (method_exists($this->controller, $before_method))
+			call_user_func_array(array($this->controller, $before_method), $validation_result);
 		
 		$result = call_user_func_array(array($this->controller, $method_name), $validation_result);
 		
-		if ('on' === @$params['>'])
-			call_user_func_array(array($this->controller, $method_name.'__after'), $validation_result);
+		$after_method = $method_name.'__after';
+		if (method_exists($this->controller, $after_method))
+			call_user_func_array(array($this->controller, $after_method), $validation_result);
 			
 		return $result;
+	}
+	
+	protected function _parseConfig($config)
+	{
+		$params = explode(',', $config);
+		$config = array();
+		foreach ($params as $param)
+		{
+			$param = trim($param);
+				
+			list($name, $value) = explode(':', $param);
+			$config[trim($name)] = trim($value);
+		}
+		
+		return $config;
 	}
 }
 /*

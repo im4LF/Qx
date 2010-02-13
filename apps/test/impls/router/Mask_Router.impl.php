@@ -57,26 +57,21 @@ class Mask_Router_Impl
 			return $this->_findMethodAndView($action_key);
 		}
 		
-		$this->params = array_merge($this->_parseMethodConfig($default), $this->_parseMethodConfig($buf));
-		$this->method = $this->params['m'];
-		$this->view = $this->params['v'];
+		@list($this->method, $this->view) = explode(':', $buf);
 		
-		return true;
-	}
-	
-	protected function _parseMethodConfig($config)
-	{
-		$params = explode(',', $config);
-		$config = array();
-		foreach ($params as $param)
+		$no_method = empty($this->method);
+		$no_view = empty($this->view);
+		if ($no_method || $no_view)
 		{
-			$param = trim($param);
-				
-			list($name, $value) = explode(':', $param);
-			$config[trim($name)] = trim($value);
+			@list($default_method, $default_view) = explode(':', $default);
+			if ($no_method)
+				$this->method = $default_method;
+			 
+			if ($no_view)
+				$this->view = $default_view;
 		}
 		
-		return $config;
+		return true;
 	}
 }
 ?>

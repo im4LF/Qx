@@ -1,7 +1,7 @@
 <?php
 class Any_Controller
 {
-	public $__x = 'm:index, v:default';
+	public $__x = 'index:default';
 	
 	public $request;
 	
