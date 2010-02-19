@@ -122,6 +122,11 @@ class Mysql_D_Impl extends D
 		return mysql_affected_rows($this->_link);
 	}
 	
+	function insertId()
+	{
+		return mysql_insert_id($this->_link);
+	}
+	
 	function fetch()
 	{
 		$function = $this->_fetch_function;
@@ -140,7 +145,7 @@ class Mysql_D_Impl extends D
 		return $this;
 	}
 	
-	public function buildQuery($sql, $values)
+	function buildQuery($sql, $values)
 	{
 		if (false !== strpos($sql, '#'))	// replace # by table prefix
 		{

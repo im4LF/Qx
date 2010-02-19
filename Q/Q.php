@@ -382,57 +382,64 @@ class Runner
 	function run($method_name)
 	{
 		$validation_method = $method_name.'__validate';
-		//if ('on' !== @$params['x'])	// if validation not enabled
-		if (!method_exists($this->controller, $validation_method))	// if validation not enabled
-			return $this->controller->$method_name();				// run controller method
-
-		echo "run $validation_method\n";
-		$validation_success = true;
-		$validation_result = (array) $this->controller->$validation_method();	// run validation method
+		$validation_result = array();
 		
-		$config = array();
-		foreach ($validation_result as $name => $result)	// check all values on error
+		if (method_exists($this->controller, $validation_method))	// if validation enabled
 		{
-			if ('__config__' === $name)
+			echo "run $validation_method\n";
+			$validation_success = true;
+			$validation_result = (array) $this->controller->$validation_method();	// run validation method
+			$config = array();
+			foreach ($validation_result as $name => $result)	// check all values on error
 			{
-				$config = $this->_parseConfig($result);
-				unset($validation_result[$name]);
-				continue;
+				if ('__config__' === $name)
+				{
+					$config = $this->_parseConfig($result);
+					unset($validation_result[$name]);
+					continue;
+				}
+				
+				if ($result->valid())
+					continue;
+				
+				$validation_success = false;
+				break;
 			}
 			
-			if ($result->valid())
-				continue;
+			$validation_error_method = $method_name.'__validation_error';
+			echo 'validation_result: '.print_r($validation_result, 1);
+		
+			if (!$validation_success && method_exists($this->controller, $validation_error_method))	// if validation not success and __validation_error exist
+			{
+				echo "run $validation_error_method\n";
+				return call_user_func_array(array($this->controller, $validation_error_method), array($validation_result));
+			}
 			
-			$validation_success = false;
-			break;
+			if ('array' === $config['args'])
+				$validation_result = array($validation_result);
 		}
 		
-		echo 'config: '.print_r($config, 1);
-		
-		$validation_error_method = $method_name.'__validation_error';
-		echo 'validation_result: '.print_r($validation_result, 1);
-		
-		//if (!$validation_success && 'sort' !== @$params['xm'])	// if validation not success and validation mode not soft
-		if (!$validation_success && method_exists($this->controller, $validation_error_method))	// if validation not success and __validation_error exist
-		{
-			echo "run $validation_error_method\n";
-			return call_user_func_array(array($this->controller, $validation_error_method), array($validation_result));
-		}
-		
-		if ('array' === $config['args'])
-			$validation_result = array($validation_result);
-			
 		$before_method = $method_name.'__before';
 		if (method_exists($this->controller, $before_method))
-			call_user_func_array(array($this->controller, $before_method), $validation_result);
+		{
+			$validation_result = call_user_func_array(array($this->controller, $before_method), $validation_result);
+			
+			if ('array' === $config['args'])
+				$validation_result = array($validation_result);
+		}
 		
-		$result = call_user_func_array(array($this->controller, $method_name), $validation_result);
+		$validation_result = call_user_func_array(array($this->controller, $method_name), $validation_result);
 		
 		$after_method = $method_name.'__after';
 		if (method_exists($this->controller, $after_method))
+		{
+			if ('array' === $config['args'])
+				$validation_result = array($validation_result);
+				
 			call_user_func_array(array($this->controller, $after_method), $validation_result);
+		}
 			
-		return $result;
+		return $this->controller->response;
 	}
 	
 	protected function _parseConfig($config)
@@ -450,152 +457,6 @@ class Runner
 		return $config;
 	}
 }
-/*
-class Validator
-{
-	protected $_value;
-	protected $_pointers;
-	protected $_callback;
-	
-	protected $_rules;
-	protected $_errors;
-	
-	function __construct($value, $type)
-	{
-		$this->_value = new $type($value);
-		return $this;
-	}
-	
-	static function init($value, $type)
-	{
-		return new Validator($value, $type);
-	}
-	
-	function pointers(&$pointers)
-	{
-		$this->_pointers =& $pointers;
-		return $this;
-	}
-	
-	function callbacks(&$object)
-	{
-		$this->_callbacks =& $object;
-		return $this;
-	}
-	
-	function value()
-	{
-		return $this->_value;
-	}
-	
-	function rule($rule)
-	{
-		$alias = $rule;
-		// if rule have alias
-		if (preg_match_all('/(.+?)(\s+as\s+(\w+)|$)/i', $rule, $matches, PREG_SET_ORDER) && isset($matches[0][3]))
-		{	
-			$alias = $matches[0][3];
-			$rule = $matches[0][1];
-		}
-		
-		$args = array();
-		if (false !== ($spos = strpos($rule, '('))) // if rule have arguments
-		{	
-			// separate rule name and rule arguments
-			preg_match_all('/\((.*)\)/', $rule, $matches, PREG_SET_ORDER);
-			$buf = $matches[0][1];
-			$rule = substr($rule, 0, $spos);
-			
-			// make code for build arguments array 
-			$code = '';
-			if (preg_match_all('/\$(\w+)/', $buf, $matches, PREG_SET_ORDER)) // if arguments have pointers
-			{
-				foreach ($matches as $match)
-				{
-					$pointer = $match[1];
-					$code .= '$__param_'.$match[1].'=$this->_pointers[\''.$pointer.'\'];';
-					$buf = str_replace($match[1], '__param_'.$match[1], $buf);
-				}
-			}			
-			$code .= '$args=array('.$buf.');';
-			eval($code); // build args
-		}
-		
-		$this->_addRule($rule, $args, $alias);
-		
-		return $this;
-	}
-	
-	function rules($rules = null)
-	{
-		if (!$rules)
-			return $this->_rules;
-			
-		foreach ($rules as $rule)
-			$this->rule($rule);
-			
-		return $this;
-	}
-	
-	protected function _addRule($name, $args, $alias)
-	{
-		$at = '_value';
-		if ('call' === $name)
-		{
-			$at = '_callbacks';
-			$name = $args[0];
-			$args[0] = $this->_value;
-		}
-		
-		$this->_rules[$alias] = array(
-			'at' => $at,
-			'name' => $name,
-			'args' => $args
-		);
-	}
-	
-	function __call($name, $args)
-	{
-		$this->_addRule($name, $args, $name);
-		
-		return $this;
-	}
-	
-	function _as($alias)
-	{
-		$rule = array_pop($this->_rules);
-		$this->_rules[$alias] = $rule;
-		
-		return $this;
-	}
-	
-	function validate()
-	{
-		foreach ($this->_rules as $alias => $params)	// foreach rules
-		{
-			if (isset($params['validated'])) continue;	// if rule already validated
-			
-			$result = call_user_method_array($params['name'], $this->{$params['at']}, $params['args']);
-			$this->_rules[$alias]['result'] = $result;
-			$this->_rules[$alias]['validated'] = true;
-			
-			if (!$result)	// if result is error
-				$this->_errors[$alias] = true;	// save error
-		}
-
-		return $this;	
-	}
-	
-	function errors()
-	{
-		return $this->_errors;
-	}
-
-	function haveErrors()
-	{
-		return (bool) count($this->_errors);
-	}
-}*/
 
 class Validator
 {

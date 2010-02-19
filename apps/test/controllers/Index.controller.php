@@ -33,15 +33,15 @@ class Index_Controller extends Any_Controller
 		);
 	}
 	
-	function testMethod($email, $password) 
+	function testMethod($values) 
 	{
-		$args = func_get_args();
-		echo 'args: '.print_r($args, 1);
-		echo 'email: '.print_r($email, 1);
+		echo 'values: '.print_r($values, 1);
 		
-		return array(
+		$this->response = array(
 			'title' => 'Index_Controller::testMethod'
 		);
+		$values['__id__'] = 1;
+		return $values;
 	}
 	
 	function testMethod__after($values)
