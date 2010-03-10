@@ -1,30 +1,29 @@
 <?php 
-class Simple_URL_Impl
+class Simple_URL_Impl extends QObject
 {
-	protected $_raw_url;
-	public $path = '/';
-	public $action = 'index';
-	public $state = 'index';
-	public $args = array();
-	public $viewtype = 'html';
+	protected $raw_url;
+	protected $path = '/';
+	protected $action = 'index';
+	protected $args = array();
+	protected $viewtype = 'html';
+	
+	protected $__array_properties = array('args');
 	
     function parse($raw_url)
     {
-    	$this->_raw_url = $raw_url;
+    	$this->raw_url = $raw_url;
         $buf = parse_url($raw_url);
         $this->path = $buf['path'];
         
-        // parse view
-        if (false !== ($start = strrpos($this->path, '.')))
+        if (false !== ($start = strrpos($this->path, '.')))	// parse view
         {
             $this->viewtype = substr($this->path, $start + 1);
             $this->path = substr($this->path, 0, $start);
         }
         
-        // try to parse url parameters
         $params_re = '/\/-([\w\-]+)(\/([^\/]+))?/';
         $matches = array();
-        if (preg_match_all($params_re, $this->path, $matches, PREG_SET_ORDER))
+        if (preg_match_all($params_re, $this->path, $matches, PREG_SET_ORDER))	// extract url parameters
         {
             foreach ($matches as $param)
             {
@@ -33,15 +32,11 @@ class Simple_URL_Impl
             $this->path = preg_replace($params_re, '/', $this->path);
         }
         
-        // try to parse action and state
-        $action_state_re = '/\/\.([\w\-]+)(\.([\w\-]+))?/';
-        if (preg_match_all($action_state_re, $this->path, $matches, PREG_SET_ORDER))
+        $action_re = '/\/\.([\w\-]+)/';
+        if (preg_match_all($action_re, $this->path, $matches, PREG_SET_ORDER))	// extract action
         {
             $this->action = $matches[0][1];
-            if (isset($matches[0][3]))
-                $this->state = $matches[0][3];
-                
-            $this->path = preg_replace($action_state_re, '/', $this->path);
+            $this->path = preg_replace($action_re, '/', $this->path);
         }
 
         $this->path = preg_replace('/\/+/', '/', $this->path);

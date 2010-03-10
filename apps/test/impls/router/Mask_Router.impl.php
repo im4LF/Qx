@@ -7,7 +7,6 @@ class Mask_Router_Impl
 	public $controller;
 	public $method;
 	public $view;
-	public $params;
 	
 	function route($url, $http_method) 
 	{

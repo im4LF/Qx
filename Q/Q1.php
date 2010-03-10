@@ -334,34 +334,18 @@ class Benchmark
 	}
 }
 
-/**
- * Request object
- */
-class Request
+class QObject
 {
-    protected $_raw_url;
-	protected $_url;
-	protected $_scenario;
-    protected $_alias;
-    protected $_method;
-    protected $_cookie;   
-    protected $_get;
-    protected $_post;
-    protected $_files;
-   
-    function __construct($raw_url = '')
+	protected $__array_properties = array();
+	
+	function __call($name, $args = array())
     {
-        return $this->rawURL($raw_url);
-    }
-   
-    function __call($name, $args = array())
-    {
-        $property = '_'.strtolower(preg_replace('/([a-z])([A-Z])/', '$1_$2', $name));
+        $property = strtolower(preg_replace('/([a-z])([A-Z])/', '$1_$2', $name));
        
         if (!count($args))
             return $this->$property;
 
-        if ('_cookie' === $property || '_get' === $property || '_post' === $property || '_files' === $property)
+        if (false !== array_search($property, $this->__array_properties))
         {
             if (is_string($args[0]))
             {
@@ -376,13 +360,41 @@ class Request
         $this->$property = $args[0];
         return $this;
     }
+}
+
+/**
+ * Request object
+ */
+class Request extends QObject
+{
+    protected $raw_url;
+	protected $url;
+	protected $scenario;
+    protected $alias;
+    protected $method;
+    protected $cookie;   
+    protected $get;
+    protected $post;
+    protected $files;
+   
+   	protected $__array_properties = array('cookie', 'get', 'post', 'files');
+   
+    function __construct($raw_url = '')
+    {
+        return $this->rawURL($raw_url);
+    }
    
     function dispatch()
     {
-    	$scenario_config = import::config('app:configs/app.php')->scenarios[$this->_scenario];
+    	$scenario_config = import::config('app:configs/app.php')->scenarios[$this->scenario];
 		$scenario_class = $scenario_config['class'];
 		$scenario_impls = $scenario_config['impls'];
-		$this->_url = F($scenario_impls['url'])->parse($this->raw_url);
+		$this->url = F($scenario_impls['url'])->parse($this->raw_url);
+		
+		F($scenario_class, $this, $scenario_impls)	// create scenario
+			->open()			// init scenario
+			->run()				// run
+			->close();			// close
 		
         return $this;
     }
@@ -398,4 +410,18 @@ function Request($raw_url = '')
 {
     return new Request($raw_url);
 }
-?>
+
+class Runner
+{
+	protected $_controller;
+	
+	function __construct(&$controller)
+	{
+		$this->_controller =& $controller;
+	}
+	
+	function run($method_name)
+	{
+		return call_user_func(array($this->_controller, $method_name));
+	}
+}

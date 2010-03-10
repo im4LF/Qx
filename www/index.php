@@ -8,7 +8,7 @@ require '../Q/Q.php';								// require Q
 
 import::scan('app:configs/import.php');	// scan defined paths in import configuration
 
-Request('/.test.html', // request URI
+Request('/', // request URI
 	array(		
 		'method' => 'POST',
 		'name' => 'main',				// request name

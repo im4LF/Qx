@@ -1,10 +1,95 @@
 <?php
-$__r = array();	// registry holder
-$__s = array(); // sigleton holder
+$__r = array();
+$__s = array();
 
 import::init();
+import::scan('app:configs/import.php');
 import::register();
 
+/**
+ * Class factory
+ * 
+ * @example F('SomeClass', $param1, ...)->objectMethod(); - create new instance of SomeClass
+ * 
+ * @return object
+ */
+function F()
+{
+	$args = func_get_args();
+    $class_name = array_shift($args);
+    
+    $key = "new [$class_name]";
+    Benchmark::start($key);
+    
+    $object = null;
+    switch (count($args))
+    {
+        case 0:
+            $object = new $class_name(); break;
+        case 1:
+            $object = new $class_name($args[0]); break;
+        case 2:
+            $object = new $class_name($args[0], $args[1]); break;
+        case 3:
+            $object = new $class_name($args[0], $args[1], $args[2]); break;
+        case 4:
+            $object = new $class_name($args[0], $args[1], $args[2], $args[3]); break;
+        case 5:
+            $object = new $class_name($args[0], $args[1], $args[2], $args[3], $args[4]); break;
+        case 6:
+            $object = new $class_name($args[0], $args[1], $args[2], $args[3], $args[4], $args[5]); break;
+        case 7:
+            $object = new $class_name($args[0], $args[1], $args[2], $args[3], $args[4], $args[5], $args[6]); break;
+    }
+	
+    Benchmark::stop($key);
+    return $object;
+}
+
+/**
+ * Singleton amulation
+ * 
+ * @example S('SomeClass', $param1, $param2)->objectMethod(); - create new instance of class SomeClass
+ * @example S('SomeClass')->objectMethod(); - return previously created object
+ * 
+ * @return object 
+ */
+function S()
+{
+	global $__s;
+	
+	$args = func_get_args();
+    $class_name = $args[0];
+	
+    if (!array_key_exists($class_name, $__s))
+        $__s[$class_name] = call_user_func_array('F', $args);
+
+    return $__s[$class_name];
+}
+
+/**
+ * Registry emulation
+ * 
+ * @example R('my-key', new SomeObject)->objectMethod();
+ * @example R('my-key')->objectMethod();
+ * 
+ * @param string $key   registry key for value
+ * @param mixed  $value [optional] value for key
+ * @return mixed        if not defined - current value, previously defined if key already exists 
+ */
+function R($key, $value = null)
+{
+	global $__r;
+	
+	if (!array_key_exists($key, $__r))
+        $__r[$key] = $value;
+
+    return $__r[$key];
+}
+
+/**
+ * import helper
+ */
 class import
 {
 	private static $_config;
@@ -211,87 +296,6 @@ class import
     }
 }
 
-/**
- * Class factory
- * 
- * @example F('SomeClass', $param1, ...)->objectMethod(); - create new instance of SomeClass
- * 
- * @return object
- */
-function F()
-{
-	$args = func_get_args();
-    $class_name = array_shift($args);
-    
-    $key = "new [$class_name]";
-    Benchmark::start($key);
-    
-    $object = null;
-    switch (count($args))
-    {
-        case 0:
-            $object = new $class_name(); break;
-        case 1:
-            $object = new $class_name($args[0]); break;
-        case 2:
-            $object = new $class_name($args[0], $args[1]); break;
-        case 3:
-            $object = new $class_name($args[0], $args[1], $args[2]); break;
-        case 4:
-            $object = new $class_name($args[0], $args[1], $args[2], $args[3]); break;
-        case 5:
-            $object = new $class_name($args[0], $args[1], $args[2], $args[3], $args[4]); break;
-        case 6:
-            $object = new $class_name($args[0], $args[1], $args[2], $args[3], $args[4], $args[5]); break;
-        case 7:
-            $object = new $class_name($args[0], $args[1], $args[2], $args[3], $args[4], $args[5], $args[6]); break;
-    }
-	
-    Benchmark::stop($key);
-    return $object;
-}
-
-/**
- * Singleton amulation
- * 
- * @example S('SomeClass', $param1, $param2)->objectMethod(); - create new instance of class SomeClass
- * @example S('SomeClass')->objectMethod(); - return previously created object
- * 
- * @return object 
- */
-function S()
-{
-	global $__s;
-	
-	$args = func_get_args();
-    $class_name = $args[0];
-	
-    if (!array_key_exists($class_name, $__s))
-        $__s[$class_name] = call_user_func_array('F', $args);
-
-    return $__s[$class_name];
-}
-
-/**
- * Registry emulation
- * 
- * @example R('my-key', new SomeObject)->objectMethod();
- * @example R('my-key')->objectMethod();
- * 
- * @param string $key   registry key for value
- * @param mixed  $value [optional] value for key
- * @return mixed        if not defined - current value, previously defined if key already exists 
- */
-function R($key, $value = null)
-{
-	global $__r;
-	
-	if (!array_key_exists($key, $__r))
-        $__r[$key] = $value;
-
-    return $__r[$key];
-}
-
 class Benchmark
 {
 	static $marks;
@@ -329,11 +333,6 @@ class Benchmark
 	}
 }
 
-function Request($url, $params)
-{
-	return new Request($url, $params);
-}
-
 class Request 
 {
 	public $raw_url;
@@ -369,6 +368,21 @@ class Request
 	}
 }
 
+/**
+ * Helper function for create new Request object
+ * 
+ * @param string $url
+ * @param array $params
+ * @return object
+ */
+function Request($url, $params)
+{
+	return new Request($url, $params);
+}
+
+/**
+ * Controller method runner
+ */
 class Runner
 {
 	public $controller;
@@ -379,85 +393,38 @@ class Runner
 		$this->controller =& $controller;
 	}
 	
+	/**
+	 * Run method
+	 * 
+	 * @param string $method_name
+	 * @return mixed 
+	 */
 	function run($method_name)
 	{
-		$validation_method = $method_name.'__validate';
-		$validation_result = array();
-		
-		if (method_exists($this->controller, $validation_method))	// if validation enabled
-		{
-			echo "run $validation_method\n";
-			$validation_success = true;
-			$validation_result = (array) $this->controller->$validation_method();	// run validation method
-			$config = array();
-			foreach ($validation_result as $name => $result)	// check all values on error
-			{
-				if ('__config__' === $name)
-				{
-					$config = $this->_parseConfig($result);
-					unset($validation_result[$name]);
-					continue;
-				}
-				
-				if ($result->valid())
-					continue;
-				
-				$validation_success = false;
-				break;
-			}
-			
-			$validation_error_method = $method_name.'__validation_error';
-			echo 'validation_result: '.print_r($validation_result, 1);
-		
-			if (!$validation_success && method_exists($this->controller, $validation_error_method))	// if validation not success and __validation_error exist
-			{
-				echo "run $validation_error_method\n";
-				return call_user_func_array(array($this->controller, $validation_error_method), array($validation_result));
-			}
-			
-			if ('array' === $config['args'])
-				$validation_result = array($validation_result);
-		}
-		
 		$before_method = $method_name.'__before';
 		if (method_exists($this->controller, $before_method))
-		{
-			$validation_result = call_user_func_array(array($this->controller, $before_method), $validation_result);
-			
-			if ('array' === $config['args'])
-				$validation_result = array($validation_result);
-		}
+			call_user_func(array($this->controller, $before_method));
 		
-		$validation_result = call_user_func_array(array($this->controller, $method_name), $validation_result);
+		try
+		{
+			$result = call_user_func(array($this->controller, $method_name));
+		}
+		catch (ValidationException $e)
+		{
+			$result = call_user_func_array(array($this->controller, $method_name.'__validation_error'), array($e->errors()));
+		}
 		
 		$after_method = $method_name.'__after';
 		if (method_exists($this->controller, $after_method))
-		{
-			if ('array' === $config['args'])
-				$validation_result = array($validation_result);
-				
-			call_user_func_array(array($this->controller, $after_method), $validation_result);
-		}
+			call_user_func(array($this->controller, $after_method));
 			
-		return $this->controller->response;
-	}
-	
-	protected function _parseConfig($config)
-	{
-		$params = explode(',', $config);
-		$config = array();
-		foreach ($params as $param)
-		{
-			$param = trim($param);
-				
-			list($name, $value) = explode(':', $param);
-			$config[trim($name)] = trim($value);
-		}
-		
-		return $config;
+		return $result;
 	}
 }
 
+/**
+ * Validator base class
+ */
 class Validator
 {
 	protected $_value;
@@ -632,5 +599,25 @@ class Validator
 			$this->_valid = false;
 			
 		return $this;
+	}
+}
+
+/**
+ * Validation exception
+ */
+class ValidationException extends Exception
+{
+	protected $_errors;
+	
+	function __construct($errors, $code = 0, Exception $previous = null) 
+	{
+		$this->_errors =& $errors;
+		
+        parent::__construct('Validation exception', $code);
+    }
+	
+	function errors()
+	{
+		return $this->_errors;
 	}
 }
